@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# Databases
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+
+# Bulk open data downloads
+*.json.gz
+
+# IDE and OS metadata
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Scratch and temporary files
+scratch/
+tmp/
+*.log

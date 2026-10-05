@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "signalpost"
+version = "0.1.0"
+description = "Agent for finding, verifying, and maintaining public information about Norwegian companies."
+readme = "README.md"
+requires-python = ">=3.9"
+authors = [
+    { name = "Signalpost Team" }
+]
+dependencies = [
+    "pydantic>=2.0.0",
+    "requests>=2.28.0",
+]
+
+[project.scripts]
+signalpost = "signal_post.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["signal_post*"]
