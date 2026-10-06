@@ -373,8 +373,8 @@ def main(args: Optional[List[str]] = None) -> None:
     parser.add_argument(
         "--sources",
         type=str,
-        default="registry,roles",
-        help="Comma-separated list of data sources to enable (e.g. 'registry,roles' or 'registry'). Default: 'registry,roles'",
+        default="registry,roles,accounts",
+        help="Comma-separated list of data sources to enable (e.g. 'registry,roles,accounts'). Default: 'registry,roles,accounts'",
     )
 
     parsed = parser.parse_args(args)
@@ -390,7 +390,7 @@ def main(args: Optional[List[str]] = None) -> None:
         if parsed.run is not None:
             db_file = parsed.db or "signalpost.db"
             live_refresh = not parsed.no_live
-            sources_list = [s.strip().lower() for s in (parsed.sources or "registry,roles").split(",") if s.strip()]
+            sources_list = [s.strip().lower() for s in (parsed.sources or "registry,roles,accounts").split(",") if s.strip()]
             include_roles = "roles" in sources_list
             include_finanstilsynet = "finanstilsynet" in sources_list
             include_accounts = "accounts" in sources_list

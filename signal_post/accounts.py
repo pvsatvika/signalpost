@@ -7,9 +7,11 @@ Endpoint (open, public, no authentication required):
 Responsibilities:
 - Budget-enforced, identity-verified retrieval of structured annual financial key figures.
 - Strict whitelist of official source fields only (no derived financial ratios, margins, or formulas).
+- Exact source-supplied amounts and currencies only; Signalpost applies no amount scaling and no currency conversion.
+- Statements with missing/empty currency metadata are withheld from financial fact publication.
 - Separate company ('SELSKAP') vs consolidated group ('KONSERN') accounts.
 - Period-specific, scope-aware fact keys: accounts_<period_key>_<scope>_<field_name>.
-- Deterministic revision ordering: chooses the latest resubmitted statement based on journalnr/id regardless of API array order.
+- Conservative duplicate filing rules: identical duplicates are deduplicated deterministically; conflicting duplicate filings for the same period/scope are withheld from clean publication.
 - Conservative status semantics: distinguish 'success' from 'success_empty', 'not_found', 'failed', 'malformed', 'budget_exhausted'.
 """
 
@@ -207,8 +209,10 @@ def extract_account_facts_and_evidence(
 ) -> List[Tuple[str, str, Dict[str, Any]]]:
     """
     Extract normalized period-specific, scope-aware financial key figures from Regnskapsregisteret payload.
-    - Sorts multiple filings for the same period deterministically by journalnr/id (latest revision selected).
-    - Formats collision-free period keys: accounts_<period_key>_<scope>_<field_name>.
+    - Currency enforcement: requires explicit source-supplied currency metadata (no NOK fallback).
+    - Conservative duplicate handling: identical duplicate filings for a period/scope are deduplicated;
+      conflicting duplicate filings are withheld from clean publication.
+    - Collision-free period keys: accounts_<period_tag>_<scope>_<field_name>.
     - Enforces strict whitelist and numeric precision checks.
     Returns list of (fact_key, deterministic_json_value, evidence_meta).
     """
@@ -216,11 +220,16 @@ def extract_account_facts_and_evidence(
     now_iso = retrieved_at or datetime.now(timezone.utc).isoformat()
     url = ACCOUNTS_URL_TEMPLATE.format(org=valid_org)
 
-    # 1. Group records by period and scope, then sort by journalnr/id descending to pick the latest revision
+    # 1. Group records by exact period and scope
     period_groups: Dict[Tuple[str, str, str], List[Dict[str, Any]]] = {}
     for acc in accounts_payload:
         if not isinstance(acc, dict):
             continue
+
+        # Currency requirement: must have explicit currency metadata
+        valuta_raw = acc.get("valuta")
+        if not valuta_raw or not str(valuta_raw).strip():
+            continue  # Withhold statements missing explicit currency metadata
 
         r_type = str(acc.get("regnskapstype") or "SELSKAP").upper()
         scope = "konsern" if r_type == "KONSERN" else "selskap"
@@ -235,24 +244,49 @@ def extract_account_facts_and_evidence(
         group_key = (fra_dato, til_dato, scope)
         period_groups.setdefault(group_key, []).append(acc)
 
-    # Helper for sorting revisions: journalnr (numeric string), then id (int)
-    def revision_sort_key(acc: Dict[str, Any]) -> Tuple[int, int]:
-        j_str = str(acc.get("journalnr") or "0")
-        j_num = int(j_str) if j_str.isdigit() else 0
-        a_id = acc.get("id")
-        i_num = int(a_id) if isinstance(a_id, (int, str)) and str(a_id).isdigit() else 0
-        return (j_num, i_num)
-
     out: List[Tuple[str, str, Dict[str, Any]]] = []
 
     for (fra_dato, til_dato, scope), records in sorted(period_groups.items()):
-        # Sort descending so the latest resubmitted revision is processed first
-        sorted_records = sorted(records, key=revision_sort_key, reverse=True)
-        acc = sorted_records[0]
+        # Helper to extract whitelisted facts dictionary from a statement
+        def get_statement_facts(acc: Dict[str, Any]) -> Dict[str, Any]:
+            facts_dict = {}
+            for path, field_name in WHITELISTED_FINANCIAL_FIELDS:
+                raw_val = _get_nested(acc, path)
+                num_val = sanitize_numeric_amount(raw_val)
+                if num_val is not None:
+                    facts_dict[field_name] = num_val
+            return facts_dict
+
+        # Case A: Single record for this period and scope -> process normally
+        if len(records) == 1:
+            selected_acc = records[0]
+        else:
+            # Multiple records for the same period and scope
+            # Check if all records have identical whitelisted financial values and currency
+            first_facts = get_statement_facts(records[0])
+            first_currency = str(records[0].get("valuta")).strip().upper()
+
+            has_conflict = False
+            for rec in records[1:]:
+                rec_facts = get_statement_facts(rec)
+                rec_currency = str(rec.get("valuta")).strip().upper()
+                if rec_facts != first_facts or rec_currency != first_currency:
+                    has_conflict = True
+                    break
+
+            if has_conflict:
+                # Case C: Conflicting duplicate filings -> withhold monetary facts for safety
+                logger.warning(
+                    f"Conflicting duplicate filings found for org {valid_org} period {fra_dato} to {til_dato} ({scope}). Withholding monetary facts."
+                )
+                continue
+            else:
+                # Case B: Identical duplicate filings -> equivalent observations. Pick first deterministically for output stability
+                selected_acc = records[0]
 
         r_type = "KONSERN" if scope == "konsern" else "SELSKAP"
-        valuta = str(acc.get("valuta") or "NOK").upper()
-        journalnr = acc.get("journalnr")
+        valuta = str(selected_acc.get("valuta")).strip().upper()
+        journalnr = selected_acc.get("journalnr")
 
         year = None
         if len(til_dato) >= 4 and til_dato[:4].isdigit():
@@ -264,7 +298,7 @@ def extract_account_facts_and_evidence(
             continue
 
         # Period tag: standard calendar year (YYYY-01-01 to YYYY-12-31) uses 'YYYY'.
-        # Non-calendar or short periods use 'YYYY_YYYYMMDD_YYYYMMDD' to prevent any key collisions.
+        # Non-calendar or short periods use 'YYYY_YYYYMMDD_YYYYMMDD' to prevent key collisions.
         if fra_dato == f"{year}-01-01" and til_dato == f"{year}-12-31":
             period_tag = year
         else:
@@ -272,12 +306,9 @@ def extract_account_facts_and_evidence(
             t_nodash = til_dato.replace("-", "")
             period_tag = f"{year}_{f_nodash}_{t_nodash}"
 
-        for path, field_name in WHITELISTED_FINANCIAL_FIELDS:
-            raw_val = _get_nested(acc, path)
-            num_val = sanitize_numeric_amount(raw_val)
-            if num_val is None:
-                continue
+        statement_facts = get_statement_facts(selected_acc)
 
+        for field_name, num_val in statement_facts.items():
             fact_key = f"accounts_{period_tag}_{scope}_{field_name}"
 
             fact_value_dict = {
@@ -314,7 +345,7 @@ def extract_account_facts_and_evidence(
                     "source_name": ACCOUNTS_SOURCE_NAME,
                     "exact_source_url": url,
                     "retrieved_at": now_iso,
-                    "source_validity_date": til_dato,
+                    "source_validity_date": None,  # No explicit submission/registration timestamp in open schema
                     "verification_status": "source_asserted",
                     "raw_evidence": json.dumps(raw_ev_dict, ensure_ascii=False, sort_keys=True),
                 }

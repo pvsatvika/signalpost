@@ -48,8 +48,9 @@ This document details the architectural specifications, API requirements, model 
 - **Endpoint Pattern**: `https://data.brreg.no/regnskapsregisteret/regnskap/{org_number}`
 - **Authentication**: **None** (Public Open Data REST API under NLOD).
 - **Transport**: HTTPS GET returning structured JSON arrays of annual financial statements.
-- **Scope & Whitelist**: Strict whitelist of official source key figures (`salgsinntekter`, `sum_driftsinntekter`, `driftsresultat`, `sum_driftskostnad`, `ordinaert_resultat_foer_skatt`, `aarsresultat`, `sum_eiendeler`, `sum_omloepsmidler`, `sum_anleggsmidler`, `sum_egenkapital`, `sum_gjeld`). Zero derived formulas or calculated ratios.
-- **Separation & Precision**: Strictly separates company (`SELSKAP`) vs group (`KONSERN`) accounts, preserves exact currency (e.g. `NOK`, `USD`), accounting dates (`fraDato`, `tilDato`), and preserves numeric zero (`0`) and negative numbers.
+- **Scope & Whitelist**: Strict whitelist of official source key figures (`salgsinntekter`, `sum_driftsinntekter`, `driftsresultat`, `sum_driftskostnad`, `ordinaert_resultat_foer_skatt`, `aarsresultat`, `sum_eiendeler`, `sum_omloepsmidler`, `sum_anleggsmidler`, `sum_egenkapital`, `sum_gjeld`). Zero derived formulas or calculated ratios. Zero OCR or LLM extraction.
+- **Scaling & Currency Precision**: Signalpost preserves the exact numeric amount returned by Brønnøysund for the statement's source-supplied currency; Signalpost applies no amount scaling and no currency conversion. Currency must be explicitly source supplied; missing currency metadata causes financial facts from that statement to be withheld.
+- **Duplicate & Revision Handling**: Identical duplicate filings for a period/scope are deduplicated deterministically; conflicting duplicate filings for the same period and scope are withheld from clean publication to prevent published ambiguity.
 
 ---
 

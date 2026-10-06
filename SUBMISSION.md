@@ -157,7 +157,7 @@ To reproduce the deterministic 1,000-profile bootstrap from the local bulk datas
 
 ## 7. Running Unit Tests
 
-Run the complete offline test suite (117 passing tests):
+Run the complete offline test suite (119 passing tests):
 ```bash
 python -m unittest discover -s tests
 ```
@@ -244,34 +244,43 @@ The Phase 9 exploratory benchmark evaluated the same 100 organization numbers wi
 
 ---
 
-## 11. Live 100-Company Regnskapsregisteret Financial Key Figures Benchmark (Phase 10)
+## 11. Fresh Canonical 100-Company Financial Benchmark (Phase 10.2)
 
-The Phase 10 benchmark evaluated the same 100 organization numbers with structured annual accounts enrichment (**Enhetsregisteret + Roles API + Regnskapsregisteret**):
+The Phase 10.2 canonical benchmark evaluated the 100 organization numbers on a fresh database (**Enhetsregisteret + Roles API + Regnskapsregisteret**):
 
 - **Command Executed**:
   ```bash
-  python -m signal_post --run benchmark_input_100.json --db coverage_accounts_100.db --output coverage_accounts_results_100.json --sources registry,roles,accounts --request-budget 500
+  python -m signal_post --run benchmark_input_100.json --output benchmark_accounts_canonical_results.json --db benchmark_accounts_canonical.db --sources registry,roles,accounts --request-budget 400
   ```
 - **Input File**: `benchmark_input_100.json` (SHA-256: `76701d63c3dfa74c5348635927818729de72ff8aa25d7a7ab7f07aa6d4b2df68`)
-- **Output Result File**: `coverage_accounts_results_100.json` (SHA-256: `f9253950fa78da752199ca3550741ff200d2310fe5b3134ecde0dd4036769a0d`)
-- **Database File**: `coverage_accounts_100.db`
-- **Metadata Provenance File**: `coverage_accounts_metadata.json`
+- **Output Result File**: `benchmark_accounts_canonical_results.json` (SHA-256: `5c395e341dbf28a43f44bbbfd580c47cbf57c40982783d38342b08bd543d0258`)
+- **Database File**: `benchmark_accounts_canonical.db`
+- **Metadata Provenance File**: `benchmark_accounts_canonical_metadata.json`
 - **Requested Companies**: `100`
 - **Successfully Processed**: `100` (`100.0%` success rate)
 - **Outbound HTTP Request Breakdown**: `300` total requests (`100` base + `100` roles + `100` accounts)
-- **Wall-Clock Runtime**: **`126.42 seconds`** (Avg `1.2642s` / company)
+- **Wall-Clock Runtime**: **`71.94 seconds`** (Avg `0.7194s` / company)
 - **Companies Enriched with Financial Key Figures**: `68 / 100` (`68.0%` of benchmark sample have filed accounts)
-- **Total Financial Facts Added**: `2,178` active financial facts (Avg `32.03` financial facts / enriched company)
-- **Accuracy & Whitelist Enforcement**: `100%` (strictly whitelisted source fields; 0 derived ratios, 0 profit margins, 0 OCR/parsing errors)
-- **Scope & Currency Precision**: `100%` (company `selskap` vs group `konsern` separated; `NOK`/`USD` preserved; zero and negative amounts preserved)
+- **Missing-Currency Withholds**: `0` (all 68 enriched companies provided explicit `valuta` metadata)
+- **Conflicting Duplicate Withholds**: `0` (0 conflicting duplicate filings found in this sample)
+- **Total Financial Facts Published**: `2,178` active financial facts (Avg `32.03` financial facts / enriched company)
+- **Total Combined Active Facts Stored**: `4,523` active facts (`1,907` base + `438` roles + `2,178` accounts)
+- **Accuracy & Whitelist Enforcement**: `100%` (strictly 11 whitelisted source fields; 0 derived ratios, 0 profit margins, 0 OCR/parsing errors)
+- **Scope & Currency Precision**: `100%` (company `selskap` vs group `konsern` separated; `NOK`/`USD` preserved; zero and negative amounts preserved; exact source numeric amounts preserved without scaling or conversion)
 - **PRAGMA integrity_check**: **`ok`**
 - **PRAGMA foreign_key_check**: **`0 violations`**
-- **Evidence Linkage Rate**: **`100.0%`** (linked to complete evidence lineage)
+- **Evidence Linkage Rate**: **`100.0%`** (4,523 / 4,523 facts linked to complete evidence lineage)
 - **External API/Model Cost**: **`$0.00`** ($0 API subscription fees & $0 LLM fees)
+- **Default Source Strategy Decision**: Default sources updated to `--sources registry,roles,accounts`.
+
+*(Note: The previous `coverage_accounts_100.db` database file represents a development coverage artifact resulting from an interrupted initial run; `benchmark_accounts_canonical.db` represents the clean submission canonical benchmark).*
 
 ---
 
-## 12. Known Limitations
+## 12. Limitations & Scope
 
-- **Source Scope**: Integrated with official Brønnøysund `Enhetsregisteret`, `Roles API`, `Regnskapsregisteret`, and Finanstilsynet `Virksomhetsregisteret v2`.
-- **Synchronous Execution**: REST API requests execute sequentially per company to maintain strict request budget control.
+- **Data Source Scope**: Signalpost integrates official open APIs from Brønnøysund (`Enhetsregisteret`, `Roles API`, `Regnskapsregisteret`) and Finanstilsynet (`Virksomhetsregisteret v2`).
+- **Financial Statement Availability**: Statements are only available for entities required to submit annual accounts to Regnskapsregisteret (e.g. `AS`, `ASA`). Non-reporting entity forms (e.g. sole proprietorships `ENK`) return `success_empty` or `not_found` cleanly.
+- **Currency & Scaling**: Signalpost preserves exact source-supplied numeric amounts and currencies (`valuta`) without amount scaling or currency conversion. Statements missing currency metadata are withheld from monetary fact publication.
+- **Duplicate Resubmissions**: Identical duplicate filings are deduplicated; conflicting resubmissions for the same period/scope are withheld from clean publication to prevent published ambiguity.
+- **Synchronous API Execution**: Outbound REST requests execute sequentially per company to maintain strict request budget control.

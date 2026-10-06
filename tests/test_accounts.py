@@ -1,6 +1,6 @@
 """
 Comprehensive unit test suite for Regnskapsregisteret financial safety, revision semantics,
-and evidence context completeness.
+currency withholding, duplicate handling, and evidence context completeness.
 """
 
 import json
@@ -154,9 +154,10 @@ class TestExtractAccountFacts(unittest.TestCase):
         self.assertIn("accounts_2024_selskap_salgsinntekter", fact_keys)
         self.assertIn("accounts_2024_selskap_sum_driftsinntekter", fact_keys)
 
-        # Verify 100% evidence context completeness
+        # Verify evidence context completeness and source_validity_date = None
         salg_fact = next(f for f in facts if f[0] == "accounts_2024_selskap_salgsinntekter")
         val_dict = json.loads(salg_fact[1])
+        ev_meta = salg_fact[2]
 
         self.assertEqual(val_dict["amount"], 350000000000)
         self.assertEqual(val_dict["currency"], "NOK")
@@ -167,6 +168,7 @@ class TestExtractAccountFacts(unittest.TestCase):
         self.assertEqual(val_dict["scope"], "selskap")
         self.assertEqual(val_dict["year"], 2024)
         self.assertEqual(val_dict["field_name"], "salgsinntekter")
+        self.assertIsNone(ev_meta["source_validity_date"])
 
     def test_currency_preservation_usd(self):
         payload = [
@@ -190,6 +192,29 @@ class TestExtractAccountFacts(unittest.TestCase):
         self.assertEqual(val_dict["currency"], "USD")
         self.assertEqual(val_dict["amount"], 106848000000)
         self.assertEqual(val_dict["scope"], "konsern")
+
+    def test_missing_or_empty_currency_withheld_without_nok_fallback(self):
+        # Statements with missing/empty valuta MUST be withheld (no NOK fallback allowed)
+        payload_no_valuta = [
+            {
+                "id": 1,
+                "regnskapstype": "SELSKAP",
+                "virksomhet": {"organisasjonsnummer": "923609016"},
+                "regnskapsperiode": {"fraDato": "2024-01-01", "tilDato": "2024-12-31"},
+                # "valuta" is missing completely
+                "resultatregnskapResultat": {"driftsresultat": {"driftsinntekter": {"salgsinntekter": 500000}}}
+            },
+            {
+                "id": 2,
+                "regnskapstype": "SELSKAP",
+                "virksomhet": {"organisasjonsnummer": "923609016"},
+                "regnskapsperiode": {"fraDato": "2023-01-01", "tilDato": "2023-12-31"},
+                "valuta": "",  # Empty string valuta
+                "resultatregnskapResultat": {"driftsresultat": {"driftsinntekter": {"salgsinntekter": 400000}}}
+            }
+        ]
+        facts = extract_account_facts_and_evidence(payload_no_valuta, "923609016")
+        self.assertEqual(len(facts), 0, "Monetary facts must be withheld when valuta is missing or empty.")
 
     def test_non_calendar_period_collision_prevention(self):
         payload = [
@@ -218,6 +243,7 @@ class TestExtractAccountFacts(unittest.TestCase):
                 "regnskapstype": "SELSKAP",
                 "virksomhet": {"organisasjonsnummer": "923609016"},
                 "regnskapsperiode": {"fraDato": "2024-01-01", "tilDato": "2024-12-31"},
+                "valuta": "NOK",
                 "resultatregnskapResultat": {"driftsresultat": {"driftsinntekter": {"salgsinntekter": 50000}}}
             },
             {
@@ -225,6 +251,7 @@ class TestExtractAccountFacts(unittest.TestCase):
                 "regnskapstype": "KONSERN",
                 "virksomhet": {"organisasjonsnummer": "923609016"},
                 "regnskapsperiode": {"fraDato": "2024-01-01", "tilDato": "2024-12-31"},
+                "valuta": "NOK",
                 "resultatregnskapResultat": {"driftsresultat": {"driftsinntekter": {"salgsinntekter": 500000}}}
             }
         ]
@@ -234,35 +261,54 @@ class TestExtractAccountFacts(unittest.TestCase):
         self.assertEqual(fact_dict["accounts_2024_selskap_salgsinntekter"], 50000)
         self.assertEqual(fact_dict["accounts_2024_konsern_salgsinntekter"], 500000)
 
-    def test_deterministic_revision_ordering_normal_and_reversed(self):
-        old_filing = {
+    def test_identical_duplicate_filings_deduplicated(self):
+        filing1 = {
             "id": 10,
             "journalnr": "2024100100",
             "regnskapstype": "SELSKAP",
             "virksomhet": {"organisasjonsnummer": "923609016"},
             "regnskapsperiode": {"fraDato": "2024-01-01", "tilDato": "2024-12-31"},
+            "valuta": "NOK",
             "resultatregnskapResultat": {"driftsresultat": {"driftsinntekter": {"salgsinntekter": 100}}}
         }
-        revised_filing = {
+        filing2 = {
             "id": 20,
-            "journalnr": "2024100200",  # Higher journal number = latest revision
+            "journalnr": "2024100200",
             "regnskapstype": "SELSKAP",
             "virksomhet": {"organisasjonsnummer": "923609016"},
             "regnskapsperiode": {"fraDato": "2024-01-01", "tilDato": "2024-12-31"},
-            "resultatregnskapResultat": {"driftsresultat": {"driftsinntekter": {"salgsinntekter": 200}}}
+            "valuta": "NOK",
+            "resultatregnskapResultat": {"driftsresultat": {"driftsinntekter": {"salgsinntekter": 100}}}
         }
 
-        # Test normal order [old, revised]
-        facts_normal = extract_account_facts_and_evidence([old_filing, revised_filing], "923609016")
-        val_normal = json.loads(facts_normal[0][1])["amount"]
+        # Identical values across multiple filings -> deduplicated, output published normally
+        facts = extract_account_facts_and_evidence([filing1, filing2], "923609016")
+        self.assertEqual(len(facts), 1)
+        self.assertEqual(json.loads(facts[0][1])["amount"], 100)
 
-        # Test reversed order [revised, old]
-        facts_reversed = extract_account_facts_and_evidence([revised_filing, old_filing], "923609016")
-        val_reversed = json.loads(facts_reversed[0][1])["amount"]
+    def test_conflicting_duplicate_filings_withheld(self):
+        filing_a = {
+            "id": 10,
+            "journalnr": "2024100100",
+            "regnskapstype": "SELSKAP",
+            "virksomhet": {"organisasjonsnummer": "923609016"},
+            "regnskapsperiode": {"fraDato": "2024-01-01", "tilDato": "2024-12-31"},
+            "valuta": "NOK",
+            "resultatregnskapResultat": {"driftsresultat": {"driftsinntekter": {"salgsinntekter": 100}}}
+        }
+        filing_b = {
+            "id": 20,
+            "journalnr": "2024100200",
+            "regnskapstype": "SELSKAP",
+            "virksomhet": {"organisasjonsnummer": "923609016"},
+            "regnskapsperiode": {"fraDato": "2024-01-01", "tilDato": "2024-12-31"},
+            "valuta": "NOK",
+            "resultatregnskapResultat": {"driftsresultat": {"driftsinntekter": {"salgsinntekter": 200}}}  # Conflicting value!
+        }
 
-        # Both must deterministically output the latest revision amount (200)
-        self.assertEqual(val_normal, 200)
-        self.assertEqual(val_reversed, 200)
+        # Conflicting duplicate filings -> monetary facts MUST be withheld for safety
+        facts = extract_account_facts_and_evidence([filing_a, filing_b], "923609016")
+        self.assertEqual(len(facts), 0, "Conflicting duplicate filings must be withheld.")
 
     def test_unknown_future_fields_ignored(self):
         payload_with_unknown = [
@@ -271,6 +317,7 @@ class TestExtractAccountFacts(unittest.TestCase):
                 "regnskapstype": "SELSKAP",
                 "virksomhet": {"organisasjonsnummer": "923609016"},
                 "regnskapsperiode": {"fraDato": "2024-01-01", "tilDato": "2024-12-31"},
+                "valuta": "NOK",
                 "futureCryptoAssets": 999999,
                 "unknownField": "should_be_ignored",
                 "resultatregnskapResultat": {
