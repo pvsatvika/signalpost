@@ -393,6 +393,7 @@ def main(args: Optional[List[str]] = None) -> None:
             sources_list = [s.strip().lower() for s in (parsed.sources or "registry,roles").split(",") if s.strip()]
             include_roles = "roles" in sources_list
             include_finanstilsynet = "finanstilsynet" in sources_list
+            include_accounts = "accounts" in sources_list
 
             try:
                 org_numbers = load_input_org_numbers(parsed.run)
@@ -409,6 +410,7 @@ def main(args: Optional[List[str]] = None) -> None:
                 live_refresh=live_refresh,
                 include_roles=include_roles,
                 include_finanstilsynet=include_finanstilsynet,
+                include_accounts=include_accounts,
                 client=client,
                 max_requests_limit=parsed.request_budget,
                 input_source_identifier=parsed.run,

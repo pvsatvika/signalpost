@@ -43,6 +43,14 @@ This document details the architectural specifications, API requirements, model 
 - **Scope & Privacy**: Exact 9-digit company matching (`legalEntityType != 'Person'`). Excludes residential addresses, birth dates, and personal identification numbers.
 - **Licence Facts**: Extracts Finanstilsynet ID, LEI code, and regulatory licences/authorisations.
 
+### Regnskapsregisteret REST API
+- **Provider**: Brønnøysund Register Centre (*Regnskapsregisteret*).
+- **Endpoint Pattern**: `https://data.brreg.no/regnskapsregisteret/regnskap/{org_number}`
+- **Authentication**: **None** (Public Open Data REST API under NLOD).
+- **Transport**: HTTPS GET returning structured JSON arrays of annual financial statements.
+- **Scope & Whitelist**: Strict whitelist of official source key figures (`salgsinntekter`, `sum_driftsinntekter`, `driftsresultat`, `sum_driftskostnad`, `ordinaert_resultat_foer_skatt`, `aarsresultat`, `sum_eiendeler`, `sum_omloepsmidler`, `sum_anleggsmidler`, `sum_egenkapital`, `sum_gjeld`). Zero derived formulas or calculated ratios.
+- **Separation & Precision**: Strictly separates company (`SELSKAP`) vs group (`KONSERN`) accounts, preserves exact currency (e.g. `NOK`, `USD`), accounting dates (`fraDato`, `tilDato`), and preserves numeric zero (`0`) and negative numbers.
+
 ---
 
 ## 3. Financial Cost Analysis
@@ -51,6 +59,8 @@ This document details the architectural specifications, API requirements, model 
 | :--- | :--- |
 | **Brønnøysund Registry REST API** | `$0.00` (Free public API under NLOD) |
 | **Brønnøysund Bulk Open Data** | `$0.00` (Free public dataset under NLOD) |
+| **Brønnøysund Roles Open API** | `$0.00` (Free public API under NLOD) |
+| **Brønnøysund Regnskapsregisteret REST API** | `$0.00` (Free public API under NLOD) |
 | **Finanstilsynet Registry API v2** | `$0.00` (Free public Open API) |
 | **Database Storage (SQLite)** | `$0.00` (Local embedded database) |
 | **Model / Inference Fees** | `$0.00` (Zero commercial LLM API fees or subscriptions) |

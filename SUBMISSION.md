@@ -157,7 +157,7 @@ To reproduce the deterministic 1,000-profile bootstrap from the local bulk datas
 
 ## 7. Running Unit Tests
 
-Run the complete offline test suite (101 passing tests):
+Run the complete offline test suite (109 passing tests):
 ```bash
 python -m unittest discover -s tests
 ```
@@ -241,11 +241,37 @@ The Phase 9 exploratory benchmark evaluated the same 100 organization numbers wi
 - **PRAGMA foreign_key_check**: **`0 violations`**
 - **Evidence Linkage Rate**: **`100.0%`** (2,351 / 2,351 facts linked to complete evidence lineage)
 - **External API/Model Cost**: **`$0.00`** ($0 API subscription fees & $0 LLM fees)
-- **Default Source Strategy Decision**: Keep `--sources registry,roles` as default for general company research; keep `finanstilsynet` as an optional/conditional source via `--sources registry,roles,finanstilsynet`.
 
 ---
 
-## 11. Known Limitations
+## 11. Live 100-Company Regnskapsregisteret Financial Key Figures Benchmark (Phase 10)
 
-- **Source Scope**: Integrated with official Brønnøysund `Enhetsregisteret`, `Roles API`, and Finanstilsynet `Virksomhetsregisteret v2`. Additional sources (e.g. `Underenheter`, financial statements) can be added in future stages.
+The Phase 10 benchmark evaluated the same 100 organization numbers with structured annual accounts enrichment (**Enhetsregisteret + Roles API + Regnskapsregisteret**):
+
+- **Command Executed**:
+  ```bash
+  python -m signal_post --run benchmark_input_100.json --db coverage_accounts_100.db --output coverage_accounts_results_100.json --sources registry,roles,accounts --request-budget 500
+  ```
+- **Input File**: `benchmark_input_100.json` (SHA-256: `76701d63c3dfa74c5348635927818729de72ff8aa25d7a7ab7f07aa6d4b2df68`)
+- **Output Result File**: `coverage_accounts_results_100.json` (SHA-256: `f9253950fa78da752199ca3550741ff200d2310fe5b3134ecde0dd4036769a0d`)
+- **Database File**: `coverage_accounts_100.db`
+- **Metadata Provenance File**: `coverage_accounts_metadata.json`
+- **Requested Companies**: `100`
+- **Successfully Processed**: `100` (`100.0%` success rate)
+- **Outbound HTTP Request Breakdown**: `300` total requests (`100` base + `100` roles + `100` accounts)
+- **Wall-Clock Runtime**: **`126.42 seconds`** (Avg `1.2642s` / company)
+- **Companies Enriched with Financial Key Figures**: `68 / 100` (`68.0%` of benchmark sample have filed accounts)
+- **Total Financial Facts Added**: `2,178` active financial facts (Avg `32.03` financial facts / enriched company)
+- **Accuracy & Whitelist Enforcement**: `100%` (strictly whitelisted source fields; 0 derived ratios, 0 profit margins, 0 OCR/parsing errors)
+- **Scope & Currency Precision**: `100%` (company `selskap` vs group `konsern` separated; `NOK`/`USD` preserved; zero and negative amounts preserved)
+- **PRAGMA integrity_check**: **`ok`**
+- **PRAGMA foreign_key_check**: **`0 violations`**
+- **Evidence Linkage Rate**: **`100.0%`** (linked to complete evidence lineage)
+- **External API/Model Cost**: **`$0.00`** ($0 API subscription fees & $0 LLM fees)
+
+---
+
+## 12. Known Limitations
+
+- **Source Scope**: Integrated with official Brønnøysund `Enhetsregisteret`, `Roles API`, `Regnskapsregisteret`, and Finanstilsynet `Virksomhetsregisteret v2`.
 - **Synchronous Execution**: REST API requests execute sequentially per company to maintain strict request budget control.

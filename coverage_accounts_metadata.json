@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "benchmark_name": "canonical_100_company_live_benchmark",
+  "generated_at_utc": "2026-10-06T13:52:15.547016+00:00",
+  "command_executed": "python -m signal_post.cli --run benchmark_input_100.json --db coverage_accounts_100.db --output coverage_accounts_results_100.json --sources registry,roles,accounts --request-budget 500",
+  "input_file": "benchmark_input_100.json",
+  "input_sha256": "76701d63c3dfa74c5348635927818729de72ff8aa25d7a7ab7f07aa6d4b2df68",
+  "output_file": "coverage_accounts_results_100.json",
+  "output_sha256": "f9253950fa78da752199ca3550741ff200d2310fe5b3134ecde0dd4036769a0d",
+  "database_file": "coverage_accounts_100.db",
+  "org_number_count": 100,
+  "db_integrity_status": "ok",
+  "foreign_key_violations": 0,
+  "measured_runtime_seconds": 126.42,
+  "requests_used": 300,
+  "success_count": 100,
+  "failed_count": 0,
+  "live_refreshed_count": 100,
+  "served_from_local_count": 0,
+  "local_fallback_count": 0,
+  "estimated_external_api_cost": "$0",
+  "git_commit_hash": "2deb5d98d1a03517e372aefcc67e0c3eae862d70"
+}
