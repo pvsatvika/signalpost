@@ -157,16 +157,16 @@ To reproduce the deterministic 1,000-profile bootstrap from the local bulk datas
 
 ## 7. Running Unit Tests
 
-Run the complete offline test suite (81 passing tests):
+Run the complete offline test suite (90 passing tests):
 ```bash
 python -m unittest discover -s tests
 ```
 
 ---
 
-## 8. Canonical Live 100-Company Benchmark Results (Phase 6.2 Provenance Freeze)
+## 8. Canonical Live 100-Company Baseline Benchmark Results (Phase 6.2 Provenance Freeze)
 
-The canonical live benchmark evaluated 100 organization numbers directly against the official Brønnøysund REST API without post-run manual edits:
+The canonical live baseline benchmark evaluated 100 organization numbers directly against the official Brønnøysund REST API without post-run manual edits:
 
 - **Command Executed**:
   ```bash
@@ -187,16 +187,37 @@ The canonical live benchmark evaluated 100 organization numbers directly against
 - **Facts Stored**: `1,907` active facts (Avg `19.07` facts / company; Min: `15`, Max: `25`)
 - **Evidence Linkage Rate**: **`100.0%`** (1,907 / 1,907 facts linked to complete evidence lineage)
 
-*Artifact Provenance Note:*
-The initial `benchmark_results_100.json` and `benchmark_100.db` files are retained strictly as intermediate development artifacts. The canonical, immutable submission benchmark is `benchmark_canonical_results.json` / `benchmark_canonical.db` backed by `benchmark_metadata.json`.
+---
 
-### Evaluation Against Hackathon Limits
-- **Time Limit (45 Minutes)**: `26.05 seconds` is **99.0% below** the 45-minute limit.
-- **Request Limit (2,000 Requests)**: `100 requests` is **95.0% below** the 2,000-request limit.
+## 9. Live 100-Company Roles API Coverage Expansion Benchmark (Phase 7)
+
+The Phase 7 coverage expansion benchmark evaluated the same 100 organization numbers with dual-source enrichment (**Enhetsregisteret + Roles API**):
+
+- **Command Executed**:
+  ```bash
+  python -m signal_post --run benchmark_input_100.json --output coverage_roles_results_100.json --db coverage_roles_100.db --request-budget 250
+  ```
+- **Input File**: `benchmark_input_100.json` (SHA-256: `76701d63c3dfa74c5348635927818729de72ff8aa25d7a7ab7f07aa6d4b2df68`)
+- **Output Result File**: `coverage_roles_results_100.json` (SHA-256: `e45559698e45cea26a0829145d9e19f4a0e0c9be8403e0b17c45567539f925df`)
+- **Database File**: `coverage_roles_100.db`
+- **Metadata Provenance File**: `coverage_roles_metadata.json`
+- **Requested Companies**: `100`
+- **Successfully Processed**: `100` (`100.0%` success rate)
+- **Identity Matches**: `100 / 100` (`100.0%` match rate)
+- **Outbound HTTP Request Delta**: `200` (exactly 2 requests per company: 1 base + 1 roles)
+- **Wall-Clock Runtime**: **`54.77 seconds`** (Avg `0.5477s` / company)
+- **Companies Enriched with Roles**: `67 / 100` (`67.0%` of benchmark companies have registered role groups)
+- **Total Active Facts Stored**: `2,345` active facts (**+438 new active role facts**, Avg `23.45` facts / company)
+- **Average Role Facts Among Enriched Companies**: `6.54` role facts / company
+- **Privacy Compliance**: `100%` (0 birth dates `fodselsdato` and 0 national identity numbers `fnr` exposed)
+- **PRAGMA integrity_check**: **`ok`**
+- **PRAGMA foreign_key_check**: **`0 violations`**
+- **Evidence Linkage Rate**: **`100.0%`** (2,345 / 2,345 facts linked to complete evidence lineage)
+- **External API/Model Cost**: **`$0.00`** ($0 API subscription fees & $0 LLM fees)
 
 ---
 
-## 9. Known Limitations
+## 10. Known Limitations
 
-- **Single Primary Source**: Integrated strictly with official Brønnøysund `Enhetsregisteret`. Additional sources (e.g. `Underenheter`, financial statements) can be added in future stages.
+- **Single Primary Source**: Integrated strictly with official Brønnøysund `Enhetsregisteret` and `Roles API`. Additional sources (e.g. `Underenheter`, financial statements) can be added in future stages.
 - **Synchronous Execution**: REST API requests execute sequentially per company to maintain strict request budget control.

@@ -312,7 +312,7 @@ class TestCompanyRunner(unittest.TestCase):
             }
 
         with patch.object(BrregClient, "fetch_raw_company", side_effect=mock_fetch_impl):
-            report = runner.run_batch(["923609016"], live_refresh=True)
+            report = runner.run_batch(["923609016"], live_refresh=True, include_roles=False)
 
         m = report["run_metrics"]
         self.assertEqual(m["total_outbound_requests"], 1)

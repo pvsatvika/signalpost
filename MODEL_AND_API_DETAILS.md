@@ -27,6 +27,14 @@ This document details the architectural specifications, API requirements, model 
 - **Licence**: **Norwegian Licence for Open Government Data (NLOD)** (*Norsk lisens for åpne offentlige data*).
 - **Local Reuse**: Signalpost streams compressed bulk open data files (`enheter_alle.json.gz`) locally with memory-bounded streaming (O(1) RAM usage), requiring **0 HTTP requests** for local bootstrap selection and mass importing.
 
+### Roles Open Data REST API
+- **Provider**: Brønnøysund Register Centre (*Brønnøysundregistrene / Enhetsregisteret*).
+- **Endpoint Pattern**: `https://data.brreg.no/enhetsregisteret/api/enheter/{org_number}/roller`
+- **Authentication**: **None** (Public Open Data REST API under NLOD).
+- **Transport**: HTTPS GET returning JSON payloads.
+- **Privacy Enforcement**: Strips birth dates (`fodselsdato`) and national identity numbers (`fnr`) before facts or evidence are normalized or stored.
+- **Holder-Stable Keys**: Hashes holder identity to avoid false changes when board members leave or change ordering.
+
 ---
 
 ## 3. Financial Cost Analysis

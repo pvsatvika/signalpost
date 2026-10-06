@@ -49,6 +49,19 @@ class RequestBudgetTracker:
         """Alias for count_requests_today()."""
         return self.count_requests_today()
 
+    def get_max_request_id(self) -> int:
+        """Highest request_log id so far (0 if empty). Used as a per-run delta anchor."""
+        row = self.conn.execute("SELECT COALESCE(MAX(id), 0) FROM request_log;").fetchone()
+        return row[0] if row else 0
+
+    def count_requests_since_id(self, anchor_id: int) -> dict:
+        """Requests logged after anchor_id, grouped by request_type (actual per-run delta)."""
+        rows = self.conn.execute(
+            "SELECT request_type, COUNT(*) FROM request_log WHERE id > ? GROUP BY request_type;",
+            (anchor_id,),
+        ).fetchall()
+        return {r[0]: r[1] for r in rows}
+
     def get_remaining_budget(self) -> int:
         """Get remaining allowed requests for today."""
         used = self.count_requests_today()

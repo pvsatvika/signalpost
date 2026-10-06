@@ -370,6 +370,12 @@ def main(args: Optional[List[str]] = None) -> None:
         action="store_true",
         help="Disable live API refresh during evaluator run (use SQLite local cache)",
     )
+    parser.add_argument(
+        "--sources",
+        type=str,
+        default="registry,roles",
+        help="Comma-separated list of data sources to enable (e.g. 'registry,roles' or 'registry'). Default: 'registry,roles'",
+    )
 
     parsed = parser.parse_args(args)
 
@@ -384,6 +390,8 @@ def main(args: Optional[List[str]] = None) -> None:
         if parsed.run is not None:
             db_file = parsed.db or "signalpost.db"
             live_refresh = not parsed.no_live
+            sources_list = [s.strip().lower() for s in (parsed.sources or "registry,roles").split(",") if s.strip()]
+            include_roles = "roles" in sources_list
 
             try:
                 org_numbers = load_input_org_numbers(parsed.run)
@@ -398,6 +406,7 @@ def main(args: Optional[List[str]] = None) -> None:
                 org_numbers=org_numbers,
                 db_path=db_file,
                 live_refresh=live_refresh,
+                include_roles=include_roles,
                 client=client,
                 max_requests_limit=parsed.request_budget,
                 input_source_identifier=parsed.run,

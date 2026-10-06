@@ -24,11 +24,21 @@ from signal_post.storage import (
 )
 
 
+from signal_post.roles import (
+    BrregRolesClient,
+    ROLES_SOURCE_ID,
+    ROLES_SOURCE_NAME,
+    extract_role_facts_and_evidence,
+    save_role_facts_to_storage,
+)
+
+
 class CompanyRunner:
     """
     Evaluator-facing batch execution runner for Norwegian company research.
     Processes one or many organization numbers safely with failure isolation,
-    evidence lineage formatting, and budget protection.
+    evidence lineage formatting, multi-source enrichment (Enhetsregisteret + Roles),
+    and budget protection.
     """
 
     def __init__(
@@ -42,24 +52,32 @@ class CompanyRunner:
         init_db(self.conn)
         self.client = client or BrregClient()
         self.budget_tracker = budget_tracker or RequestBudgetTracker(self.conn, budget_limit=max_requests_limit)
+        self.roles_client = BrregRolesClient(client=self.client, budget_tracker=self.budget_tracker)
 
     def process_company(
         self,
         raw_org_number: str,
         live_refresh: bool = True,
+        include_roles: bool = True,
     ) -> Dict[str, Any]:
         """
         Process a single organization number through validation, database lookup,
-        live refresh (if configured), fact extraction, and evidence formatting.
+        live refresh (if configured), Roles API enrichment (if configured), fact extraction,
+        and evidence formatting.
 
         :param raw_org_number: Input organization number string.
         :param live_refresh: If True, attempts live Brønnøysund API lookup/refresh.
+        :param include_roles: If True, attempts Roles API enrichment.
         :return: Evaluator-ready company result dictionary.
         """
         result: Dict[str, Any] = {
             "org_number": str(raw_org_number).strip(),
             "name": None,
             "status": "failed",
+            "source_status": {
+                "enhetsregisteret": "failed",
+                "roles": "not_attempted" if include_roles else "disabled",
+            },
             "facts": [],
             "source_urls": [],
             "retrieval_dates": [],
@@ -137,7 +155,7 @@ class CompanyRunner:
                     result["summary"] = f"Failed: {e}"
                     return result
 
-        # 4. Fetch stored company profile and active facts from DB
+        # 4. Fetch stored company profile
         comp = get_company(self.conn, valid_org)
         if not comp:
             result["errors"].append(f"Company '{valid_org}' not found in local database or registry.")
@@ -147,17 +165,63 @@ class CompanyRunner:
         result["name"] = comp.get("name")
         if refreshed:
             result["status"] = "live_refreshed"
+            result["source_status"]["enhetsregisteret"] = "success"
         elif existing_comp:
             if live_refresh:
                 result["status"] = "local_fallback_after_refresh_failure"
+                result["source_status"]["enhetsregisteret"] = "local_fallback"
             else:
                 result["status"] = "served_from_local"
+                result["source_status"]["enhetsregisteret"] = "success_local"
         else:
             result["status"] = "served_from_local"
+            result["source_status"]["enhetsregisteret"] = "success_local"
 
         result["changes"] = refresh_changes
 
-        # 5. Retrieve active facts & evidence lineage
+        # 5. Roles API Enrichment if requested and live_refresh enabled
+        if include_roles:
+            if live_refresh:
+                try:
+                    if not self.budget_tracker.can_make_request():
+                        result["warnings"].append("Request budget exhausted before Roles API retrieval. Preserving stored roles if any.")
+                        result["source_status"]["roles"] = "budget_exhausted"
+                    else:
+                        roles_res = self.roles_client.fetch_roles(valid_org)
+                        result["source_status"]["roles"] = roles_res.status
+                        if roles_res.is_complete_role_set:
+                            if roles_res.payload:
+                                extracted_role_facts = extract_role_facts_and_evidence(
+                                    roles_res.payload, valid_org, retrieved_at=roles_res.retrieved_at
+                                )
+                                save_role_facts_to_storage(
+                                    self.conn,
+                                    valid_org,
+                                    extracted_role_facts,
+                                    retrieved_at=roles_res.retrieved_at,
+                                    complete_role_set=True,
+                                )
+                            elif roles_res.status == "success_empty":
+                                save_role_facts_to_storage(
+                                    self.conn,
+                                    valid_org,
+                                    [],
+                                    retrieved_at=roles_res.retrieved_at,
+                                    complete_role_set=True,
+                                )
+                        if roles_res.error and roles_res.status not in ("success", "success_empty", "not_found"):
+                            result["warnings"].append(f"Roles API retrieval note: {roles_res.error}")
+                except RequestBudgetExceededError:
+                    result["warnings"].append("Request budget exhausted before Roles API retrieval. Preserving stored profile.")
+                    result["source_status"]["roles"] = "budget_exhausted"
+                except Exception as e:
+                    # Roles failure MUST NOT invalidate base company profile
+                    result["warnings"].append(f"Roles API retrieval failed ({e}). Base company profile preserved.")
+                    result["source_status"]["roles"] = "failed"
+            else:
+                result["source_status"]["roles"] = "served_from_local"
+
+        # 6. Retrieve active facts & evidence lineage from DB
         stored_facts = get_facts(self.conn, valid_org, active_only=True)
         formatted_facts: List[Dict[str, Any]] = []
         source_urls_set = set()
@@ -166,6 +230,7 @@ class CompanyRunner:
         source_name_map = {
             "brreg_enhetsregisteret": "Brønnøysund Register Centre - Enhetsregisteret",
             "brreg_bulk_enhetsregisteret": "Brønnøysund Bulk Open Data",
+            "brreg_roles": ROLES_SOURCE_NAME,
         }
 
         for f in stored_facts:
@@ -196,8 +261,9 @@ class CompanyRunner:
         result["source_urls"] = sorted(list(source_urls_set))
         result["retrieval_dates"] = sorted(list(retrieval_dates_set))
 
-        # 6. Concise Factual Summary (using non-misleading terminology)
+        # 7. Concise Factual Summary
         fact_count = len(formatted_facts)
+        role_fact_count = sum(1 for f in formatted_facts if f["fact_key"].startswith("role_"))
         has_conflicts = any(f.get("verification_status") == "conflicting" for f in formatted_facts)
         has_corroborated = any(f.get("verification_status") == "corroborated" for f in formatted_facts)
 
@@ -217,7 +283,8 @@ class CompanyRunner:
         else:
             status_label = "Loaded from database."
 
-        result["summary"] = f"Company '{result['name']}' ({valid_org}): {fact_count} {evidence_desc}. {status_label}"
+        roles_desc = f" ({role_fact_count} role facts)" if role_fact_count > 0 else ""
+        result["summary"] = f"Company '{result['name']}' ({valid_org}): {fact_count} {evidence_desc}{roles_desc}. {status_label}"
 
         return result
 
@@ -225,6 +292,7 @@ class CompanyRunner:
         self,
         org_numbers: List[str],
         live_refresh: bool = True,
+        include_roles: bool = True,
         db_identifier: str = "signalpost.db",
         input_source_identifier: str = "input_org_numbers",
         output_mode: str = "batch_result",
@@ -235,6 +303,7 @@ class CompanyRunner:
 
         :param org_numbers: List of organization number strings.
         :param live_refresh: If True, attempts live API refresh.
+        :param include_roles: If True, attempts Roles API enrichment.
         :param db_identifier: Path or identifier of SQLite database file.
         :param input_source_identifier: Path or identifier of input source.
         :param output_mode: Output destination identifier ('file', 'stdout', etc.).
@@ -242,7 +311,7 @@ class CompanyRunner:
         """
         start_dt = datetime.now(timezone.utc)
         start_time = time.time()
-        initial_requests = self.budget_tracker.get_today_request_count()
+        anchor_id = self.budget_tracker.get_max_request_id() if self.budget_tracker else 0
 
         results: List[Dict[str, Any]] = []
         success_count = 0
@@ -251,15 +320,21 @@ class CompanyRunner:
         local_fallback_count = 0
         live_refreshed_count = 0
 
+        companies_with_roles_count = 0
+        companies_without_roles_count = 0
+        roles_source_failed_count = 0
+        total_role_facts = 0
+
         for raw_org in org_numbers:
             try:
-                comp_res = self.process_company(raw_org, live_refresh=live_refresh)
+                comp_res = self.process_company(raw_org, live_refresh=live_refresh, include_roles=include_roles)
             except Exception as e:
                 # Per-company fault isolation
                 comp_res = {
                     "org_number": str(raw_org).strip(),
                     "name": None,
                     "status": "failed",
+                    "source_status": {"enhetsregisteret": "failed", "roles": "failed"},
                     "facts": [],
                     "source_urls": [],
                     "retrieval_dates": [],
@@ -285,14 +360,34 @@ class CompanyRunner:
                 else:
                     served_from_local_count += 1
 
+                # Role coverage stats calculation
+                src_st = comp_res.get("source_status", {})
+                roles_st = src_st.get("roles")
+                facts = comp_res.get("facts", [])
+                role_facts = [f for f in facts if f.get("fact_key", "").startswith("role_")]
+                r_count = len(role_facts)
+                total_role_facts += r_count
+
+                if r_count > 0:
+                    companies_with_roles_count += 1
+                elif roles_st in ("failed", "budget_exhausted"):
+                    roles_source_failed_count += 1
+                else:
+                    companies_without_roles_count += 1
+
         elapsed = time.time() - start_time
         end_dt = datetime.now(timezone.utc)
-        total_requests_made = self.budget_tracker.get_today_request_count() - initial_requests
+        request_deltas = self.budget_tracker.count_requests_since_id(anchor_id) if self.budget_tracker else {}
+        total_requests_made = sum(request_deltas.values())
+        company_fetch_requests = request_deltas.get("company_fetch", 0)
+        roles_fetch_requests = request_deltas.get("roles_fetch", 0)
         total_req_count = len(org_numbers)
         avg_time = (elapsed / total_req_count) if total_req_count > 0 else 0.0
 
         safe_db_id = Path(db_identifier).name if db_identifier else "signalpost.db"
         safe_input_id = Path(input_source_identifier).name if input_source_identifier else "input_org_numbers"
+
+        avg_roles = round(total_role_facts / companies_with_roles_count, 2) if companies_with_roles_count > 0 else 0.0
 
         run_metrics = {
             "schema_version": "1.0.0",
@@ -308,6 +403,13 @@ class CompanyRunner:
             "served_from_local_count": served_from_local_count,
             "local_fallback_count": local_fallback_count,
             "live_refreshed_count": live_refreshed_count,
+            "companies_with_roles_count": companies_with_roles_count,
+            "companies_without_roles_count": companies_without_roles_count,
+            "roles_source_failed_count": roles_source_failed_count,
+            "total_role_facts": total_role_facts,
+            "average_role_facts_per_company": avg_roles,
+            "company_fetch_requests": company_fetch_requests,
+            "roles_fetch_requests": roles_fetch_requests,
             "total_outbound_requests": total_requests_made,
             "request_budget_limit": self.budget_tracker.budget_limit if self.budget_tracker else 2000,
             "estimated_external_api_cost": "$0",
@@ -326,6 +428,7 @@ def run_evaluation(
     org_numbers: List[str],
     db_path: str = "signalpost.db",
     live_refresh: bool = True,
+    include_roles: bool = True,
     client: Optional[BrregClient] = None,
     budget_tracker: Optional[RequestBudgetTracker] = None,
     max_requests_limit: int = 2000,
@@ -347,6 +450,7 @@ def run_evaluation(
         return runner.run_batch(
             org_numbers,
             live_refresh=live_refresh,
+            include_roles=include_roles,
             db_identifier=db_path,
             input_source_identifier=input_source_identifier,
             output_mode=output_mode,
