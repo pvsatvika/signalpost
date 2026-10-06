@@ -1,0 +1,2589 @@
+{
+  "run_metrics": {
+    "schema_version": "1.0.0",
+    "run_mode": "live",
+    "started_at": "2026-10-06T13:27:37.853818+00:00",
+    "completed_at": "2026-10-06T13:27:44.840937+00:00",
+    "elapsed_seconds": 6.99,
+    "average_seconds_per_company": 1.3974,
+    "requested_count": 5,
+    "processed_count": 5,
+    "success_count": 5,
+    "failed_count": 0,
+    "served_from_local_count": 0,
+    "local_fallback_count": 0,
+    "live_refreshed_count": 5,
+    "companies_with_roles_count": 5,
+    "companies_without_roles_count": 0,
+    "roles_source_failed_count": 0,
+    "total_role_facts": 43,
+    "average_role_facts_per_company": 8.6,
+    "companies_with_regulatory_facts_count": 2,
+    "total_regulatory_facts": 20,
+    "average_regulatory_facts_per_company": 10.0,
+    "finanstilsynet_source_failed_count": 0,
+    "company_fetch_requests": 5,
+    "roles_fetch_requests": 5,
+    "finanstilsynet_fetch_requests": 5,
+    "total_outbound_requests": 15,
+    "request_budget_limit": 100,
+    "estimated_external_api_cost": "$0",
+    "database_identifier": "finanstilsynet_live_test.db",
+    "input_source": "live_5_test",
+    "output_mode": "file"
+  },
+  "results": [
+    {
+      "org_number": "810359862",
+      "name": "AUTOBJØRN A/S",
+      "status": "live_refreshed",
+      "source_status": {
+        "enhetsregisteret": "success",
+        "roles": "success",
+        "finanstilsynet": "success"
+      },
+      "facts": [
+        {
+          "fact_key": "business_address",
+          "value": "{\"adresse\": [\"Cecilie Thoresens vei 5-7\"], \"kommune\": \"OSLO\", \"kommunenummer\": \"0301\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"1153\", \"poststed\": \"OSLO\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "capital",
+          "value": "{\"antallAksjer\": 7920, \"belop\": 792000.0, \"innfortDato\": \"2005-07-03\", \"type\": \"Aksjekapital\", \"valuta\": \"NOK\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "finanstilsynet_id",
+          "value": "FT00133996",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=810359862",
+          "retrieved_at": "2026-10-06T13:27:39.501350+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "foundation_date",
+          "value": "1968-06-10",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "has_registered_employees",
+          "value": "True",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "is_bankrupt",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "is_in_group",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "last_submitted_annual_accounts",
+          "value": "2025",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "licence_aksforagv_223005",
+          "value": "{\"description\": \"Med aksessorisk forsikringsagentvirksomhet menes foretak som utøver forsikringsformidling i tillegg til annen yrkesmessig hovedvirksomhet og som oppfyller øvrige vilkår i forsikringsformidlingsloven § 2-4. \", \"licence_code\": \"AKSFORAGV\", \"licence_name\": \"Aksessorisk forsikringsagentvirksomhet\", \"licence_name_en\": \"Ancillary agent activities\", \"registered_date\": \"2022-08-17T00:00:00\", \"service_provider_type\": \"Licensed\", \"supervisory_authority\": \"FINANSTILSYNET\"}",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=810359862",
+          "retrieved_at": "2026-10-06T13:27:39.501350+00:00",
+          "source_validity_date": "2022-08-17",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "licence_bank_99138",
+          "value": "{\"description\": \"Lov 10. april 2015 nr. 17 om finansforetak og finanskonsern § 3-2 jf. § 2-7\", \"licence_code\": \"BANK\", \"licence_name\": \"Bank\", \"licence_name_en\": \"Bank\", \"registered_date\": \"2023-12-18T00:00:00\", \"service_provider_type\": \"Agent\", \"supervisory_authority\": \"FINANSTILSYNET\"}",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=810359862",
+          "retrieved_at": "2026-10-06T13:27:39.501350+00:00",
+          "source_validity_date": "2023-12-18",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "licence_lformidl_223005",
+          "value": "{\"licence_code\": \"LFORMIDL\", \"licence_name\": \"Låneformidling\", \"licence_name_en\": \"Intermediator of loans\", \"registered_date\": \"2023-12-18T00:00:00\", \"service_provider_type\": \"Licensed\", \"supervisory_authority\": \"FINANSTILSYNET\"}",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=810359862",
+          "retrieved_at": "2026-10-06T13:27:39.501350+00:00",
+          "source_validity_date": "2023-12-18",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "licence_skadeforsi_181270",
+          "value": "{\"description\": \"Lov 10. april 2015 nr. 17 om finansforetak og finanskonsern § 3-2  jf. § 2-14\", \"licence_code\": \"SKADEFORSI\", \"licence_name\": \"Skadeforsikringsforetak\", \"licence_name_en\": \"Non-life insurance company\", \"registered_date\": \"2022-10-20T00:00:00\", \"service_provider_type\": \"Agent\", \"supervisory_authority\": \"Finanstilsynet\"}",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=810359862",
+          "retrieved_at": "2026-10-06T13:27:39.501350+00:00",
+          "source_validity_date": "2022-10-20",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "licence_skadeforsi_196829",
+          "value": "{\"description\": \"Lov 10. april 2015 nr. 17 om finansforetak og finanskonsern § 3-2  jf. § 2-14\", \"licence_code\": \"SKADEFORSI\", \"licence_name\": \"Skadeforsikringsforetak\", \"licence_name_en\": \"Non-life insurance company\", \"registered_date\": \"2022-10-22T00:00:00\", \"service_provider_type\": \"Agent\", \"supervisory_authority\": \"Finansinspektionen\"}",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=810359862",
+          "retrieved_at": "2026-10-06T13:27:39.501350+00:00",
+          "source_validity_date": "2022-10-22",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "name",
+          "value": "AUTOBJØRN A/S",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "num_employees",
+          "value": "12",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "organization_form",
+          "value": "{\"code\": \"AS\", \"description\": \"Aksjeselskap\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "phone",
+          "value": "23 03 10 20",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "primary_industry",
+          "value": "{\"code\": \"95.310\", \"description\": \"Reparasjon og vedlikehold av motorvogner\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_foretaksregisteret",
+          "value": "True",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_frivillighetsregisteret",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_mvaregisteret",
+          "value": "True",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_partiregisteret",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_stiftelsesregisteret",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registration_date",
+          "value": "1995-02-19",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_dagl_dagl_15083eca91",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Kristin Johannessen\"}, \"role_code\": \"DAGL\", \"role_group_code\": \"DAGL\", \"role_group_name\": \"Daglig leder\", \"role_name\": \"Daglig leder\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862/roller",
+          "retrieved_at": "2026-10-06T13:27:39.184605+00:00",
+          "source_validity_date": "2002-11-18",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_regn_regn_dab9f4e264",
+          "value": "{\"holder\": {\"holder_type\": \"organization\", \"name\": \"JOHNEK REGNSKAP AS\", \"org_number\": \"912765555\"}, \"role_code\": \"REGN\", \"role_group_code\": \"REGN\", \"role_group_name\": \"Regnskapsfører\", \"role_name\": \"Regnskapsfører\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862/roller",
+          "retrieved_at": "2026-10-06T13:27:39.184605+00:00",
+          "source_validity_date": "2026-01-19",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_revi_revi_70a9a8c580",
+          "value": "{\"holder\": {\"holder_type\": \"organization\", \"name\": \"INTRA REVISJON DA\", \"org_number\": \"925872830\"}, \"role_code\": \"REVI\", \"role_group_code\": \"REVI\", \"role_group_name\": \"Revisor\", \"role_name\": \"Revisor\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862/roller",
+          "retrieved_at": "2026-10-06T13:27:39.184605+00:00",
+          "source_validity_date": "2024-10-05",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_lede_ef792eda29",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Bjørn Inge Johannessen\"}, \"role_code\": \"LEDE\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styrets leder\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862/roller",
+          "retrieved_at": "2026-10-06T13:27:39.184605+00:00",
+          "source_validity_date": "2015-07-30",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_15083eca91",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Kristin Johannessen\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862/roller",
+          "retrieved_at": "2026-10-06T13:27:39.184605+00:00",
+          "source_validity_date": "2015-07-30",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "secondary_industry",
+          "value": "{\"code\": \"47.810\", \"description\": \"Detaljhandel med motorvogner\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "under_compulsory_dissolution",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "under_liquidation",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "website",
+          "value": "www.autobjorn.no",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+          "retrieved_at": "2026-10-06T13:27:37.854452+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        }
+      ],
+      "source_urls": [
+        "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=810359862",
+        "https://data.brreg.no/enhetsregisteret/api/enheter/810359862",
+        "https://data.brreg.no/enhetsregisteret/api/enheter/810359862/roller"
+      ],
+      "retrieval_dates": [
+        "2026-10-06T13:27:37.854452+00:00",
+        "2026-10-06T13:27:39.184605+00:00",
+        "2026-10-06T13:27:39.501350+00:00"
+      ],
+      "changes": [
+        {
+          "fact_key": "name",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "AUTOBJØRN A/S",
+          "explanation": "Fact 'name' was observed for the first time as 'AUTOBJØRN A/S' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "organization_form",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"code\": \"AS\", \"description\": \"Aksjeselskap\"}",
+          "explanation": "Fact 'organization_form' was observed for the first time as '{\"code\": \"AS\", \"description\": \"Aksjeselskap\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "primary_industry",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"code\": \"95.310\", \"description\": \"Reparasjon og vedlikehold av motorvogner\"}",
+          "explanation": "Fact 'primary_industry' was observed for the first time as '{\"code\": \"95.310\", \"description\": \"Reparasjon og vedlikehold av motorvogner\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "secondary_industry",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"code\": \"47.810\", \"description\": \"Detaljhandel med motorvogner\"}",
+          "explanation": "Fact 'secondary_industry' was observed for the first time as '{\"code\": \"47.810\", \"description\": \"Detaljhandel med motorvogner\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "num_employees",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "12",
+          "explanation": "Fact 'num_employees' was observed for the first time as '12' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "has_registered_employees",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "True",
+          "explanation": "Fact 'has_registered_employees' was observed for the first time as 'True' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registration_date",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "1995-02-19",
+          "explanation": "Fact 'registration_date' was observed for the first time as '1995-02-19' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "foundation_date",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "1968-06-10",
+          "explanation": "Fact 'foundation_date' was observed for the first time as '1968-06-10' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "business_address",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"adresse\": [\"Cecilie Thoresens vei 5-7\"], \"kommune\": \"OSLO\", \"kommunenummer\": \"0301\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"1153\", \"poststed\": \"OSLO\"}",
+          "explanation": "Fact 'business_address' was observed for the first time as '{\"adresse\": [\"Cecilie Thoresens vei 5-7\"], \"kommune\": \"OSLO\", \"kommunenummer\": \"0301\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"1153\", \"poststed\": \"OSLO\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "website",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "www.autobjorn.no",
+          "explanation": "Fact 'website' was observed for the first time as 'www.autobjorn.no' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "phone",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "23 03 10 20",
+          "explanation": "Fact 'phone' was observed for the first time as '23 03 10 20' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_foretaksregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "True",
+          "explanation": "Fact 'registered_in_foretaksregisteret' was observed for the first time as 'True' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_mvaregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "True",
+          "explanation": "Fact 'registered_in_mvaregisteret' was observed for the first time as 'True' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_frivillighetsregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'registered_in_frivillighetsregisteret' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_stiftelsesregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'registered_in_stiftelsesregisteret' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_partiregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'registered_in_partiregisteret' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "is_in_group",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'is_in_group' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "under_liquidation",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'under_liquidation' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "under_compulsory_dissolution",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'under_compulsory_dissolution' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "is_bankrupt",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'is_bankrupt' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "last_submitted_annual_accounts",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "2025",
+          "explanation": "Fact 'last_submitted_annual_accounts' was observed for the first time as '2025' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "capital",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"antallAksjer\": 7920, \"belop\": 792000.0, \"innfortDato\": \"2005-07-03\", \"type\": \"Aksjekapital\", \"valuta\": \"NOK\"}",
+          "explanation": "Fact 'capital' was observed for the first time as '{\"antallAksjer\": 7920, \"belop\": 792000.0, \"innfortDato\": \"2005-07-03\", \"type\": \"Aksjekapital\", \"valuta\": \"NOK\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        }
+      ],
+      "warnings": [],
+      "errors": [],
+      "summary": "Company 'AUTOBJØRN A/S' (810359862): 33 active source-supported facts (5 role facts) (6 regulatory facts). Refreshed via official registry REST API."
+    },
+    {
+      "org_number": "984851006",
+      "name": "DNB BANK ASA",
+      "status": "live_refreshed",
+      "source_status": {
+        "enhetsregisteret": "success",
+        "roles": "success",
+        "finanstilsynet": "success"
+      },
+      "facts": [
+        {
+          "fact_key": "business_address",
+          "value": "{\"adresse\": [\"Dronning Eufemias gate 30\"], \"kommune\": \"OSLO\", \"kommunenummer\": \"0301\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"0191\", \"poststed\": \"OSLO\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "capital",
+          "value": "{\"antallAksjer\": 1440664864, \"belop\": 18008310800.0, \"innfortDato\": \"2026-06-17\", \"type\": \"Aksjekapital\", \"valuta\": \"NOK\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "finanstilsynet_id",
+          "value": "FT00068800",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=984851006",
+          "retrieved_at": "2026-10-06T13:27:41.693861+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "foundation_date",
+          "value": "2002-09-10",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "has_registered_employees",
+          "value": "True",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "historical_names",
+          "value": "[{\"fraDato\": \"2002-09-12 16:22:48\", \"navn\": \"GJENSIDIGE NOR SPAREBANK ASA\", \"tilDato\": \"2004-01-19 09:15:52\"}, {\"fraDato\": \"2004-01-19 09:15:52\", \"navn\": \"DNB NOR BANK ASA\", \"tilDato\": \"2011-11-11 08:45:34\"}]",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "is_bankrupt",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "is_in_group",
+          "value": "True",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "last_submitted_annual_accounts",
+          "value": "2025",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "lei_code",
+          "value": "549300GKFG0RYRRQ1414",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=984851006",
+          "retrieved_at": "2026-10-06T13:27:41.693861+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "licence_bank_98973",
+          "value": "{\"description\": \"Lov 10. april 2015 nr. 17 om finansforetak og finanskonsern § 3-2 jf. § 2-7\", \"licence_code\": \"BANK\", \"licence_name\": \"Bank\", \"licence_name_en\": \"Bank\", \"registered_date\": \"2006-01-01T00:00:00\", \"service_provider_type\": \"Licensed\", \"supervisory_authority\": \"FINANSTILSYNET\"}",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=984851006",
+          "retrieved_at": "2026-10-06T13:27:41.693861+00:00",
+          "source_validity_date": "2006-01-01",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "licence_depotny_98973",
+          "value": "{\"licence_code\": \"DEPOTNY\", \"licence_name\": \"Depotmottaker\", \"licence_name_en\": \"Depositary\", \"registered_date\": \"2012-01-01T00:00:00\", \"service_provider_type\": \"Licensed\", \"supervisory_authority\": \"FINANSTILSYNET\"}",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=984851006",
+          "retrieved_at": "2026-10-06T13:27:41.693861+00:00",
+          "source_validity_date": "2012-01-01",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "licence_ffor_98973",
+          "value": "{\"description\": \"Verdipapirforetak med tillatelse til å yte investeringstjenester\", \"licence_code\": \"FFOR\", \"licence_name\": \"Verdipapirforetak\", \"licence_name_en\": \"Investment firm\", \"registered_date\": \"2002-09-12T00:00:00\", \"service_provider_type\": \"Licensed\", \"supervisory_authority\": \"FINANSTILSYNET\"}",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=984851006",
+          "retrieved_at": "2026-10-06T13:27:41.693861+00:00",
+          "source_validity_date": "2002-09-12",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "licence_foninoei_98973",
+          "value": "{\"description\": \"Godkjenning eller tillatelse knyttet til å stå registrert i et norsk aksjeeierregister, andelseierregister eller verdipapirsentral i stedet for den reelle eieren. \", \"licence_code\": \"FONINOEI\", \"licence_name\": \"Forvalter (nominee) i norske eierregistre\", \"licence_name_en\": \"Nominee in Norwegian securities registers\", \"registered_date\": \"2004-06-24T00:00:00\", \"service_provider_type\": \"Licensed\", \"supervisory_authority\": \"FINANSTILSYNET\"}",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=984851006",
+          "retrieved_at": "2026-10-06T13:27:41.693861+00:00",
+          "source_validity_date": "2004-06-24",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "licence_foragntftk_98973",
+          "value": "{\"description\": \"Dette er et register over agenter som formidler forsikringer på vegne av norske og utenlandske forsikringsforetak. \", \"licence_code\": \"FORAGNTFTK\", \"licence_name\": \"Forsikringsagentforetak\", \"licence_name_en\": \"Insurance agency\", \"registered_date\": \"2022-11-16T00:00:00\", \"service_provider_type\": \"Licensed\", \"supervisory_authority\": \"FINANSTILSYNET\"}",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=984851006",
+          "retrieved_at": "2026-10-06T13:27:41.693861+00:00",
+          "source_validity_date": "2022-11-16",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "licence_livsforsik_196317",
+          "value": "{\"description\": \"Lov 10. april 2015 nr. 17 om finansforetak og finanskonsern § 3-2  jf. § 2-13\", \"licence_code\": \"LIVSFORSIK\", \"licence_name\": \"Livsforsikringsforetak\", \"licence_name_en\": \"Life insurance company\", \"registered_date\": \"2025-03-19T00:00:00\", \"service_provider_type\": \"Agent\", \"supervisory_authority\": \"Autorité de contrôle prudentiel et de résolution Banque de France (ACPR)\"}",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=984851006",
+          "retrieved_at": "2026-10-06T13:27:41.693861+00:00",
+          "source_validity_date": "2025-03-19",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "licence_livsforsik_205307",
+          "value": "{\"description\": \"Lov 10. april 2015 nr. 17 om finansforetak og finanskonsern § 3-2  jf. § 2-13\", \"licence_code\": \"LIVSFORSIK\", \"licence_name\": \"Livsforsikringsforetak\", \"licence_name_en\": \"Life insurance company\", \"registered_date\": \"2023-01-03T00:00:00\", \"service_provider_type\": \"Agent\", \"supervisory_authority\": \"FINANSTILSYNET\"}",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=984851006",
+          "retrieved_at": "2026-10-06T13:27:41.693861+00:00",
+          "source_validity_date": "2023-01-03",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "licence_livsforsik_99254",
+          "value": "{\"description\": \"Lov 10. april 2015 nr. 17 om finansforetak og finanskonsern § 3-2  jf. § 2-13\", \"licence_code\": \"LIVSFORSIK\", \"licence_name\": \"Livsforsikringsforetak\", \"licence_name_en\": \"Life insurance company\", \"registered_date\": \"2022-11-16T00:00:00\", \"service_provider_type\": \"Agent\", \"supervisory_authority\": \"FINANSTILSYNET\"}",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=984851006",
+          "retrieved_at": "2026-10-06T13:27:41.693861+00:00",
+          "source_validity_date": "2022-11-16",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "licence_skadeforsi_181270",
+          "value": "{\"description\": \"Lov 10. april 2015 nr. 17 om finansforetak og finanskonsern § 3-2  jf. § 2-14\", \"licence_code\": \"SKADEFORSI\", \"licence_name\": \"Skadeforsikringsforetak\", \"licence_name_en\": \"Non-life insurance company\", \"registered_date\": \"2024-02-05T00:00:00\", \"service_provider_type\": \"Agent\", \"supervisory_authority\": \"Finanstilsynet\"}",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=984851006",
+          "retrieved_at": "2026-10-06T13:27:41.693861+00:00",
+          "source_validity_date": "2024-02-05",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "licence_skadeforsi_196316",
+          "value": "{\"description\": \"Lov 10. april 2015 nr. 17 om finansforetak og finanskonsern § 3-2  jf. § 2-14\", \"licence_code\": \"SKADEFORSI\", \"licence_name\": \"Skadeforsikringsforetak\", \"licence_name_en\": \"Non-life insurance company\", \"registered_date\": \"2025-03-19T00:00:00\", \"service_provider_type\": \"Agent\", \"supervisory_authority\": \"Autorité de contrôle prudentiel et de résolution Banque de France (ACPR)\"}",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=984851006",
+          "retrieved_at": "2026-10-06T13:27:41.693861+00:00",
+          "source_validity_date": "2025-03-19",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "licence_skadeforsi_99172",
+          "value": "{\"description\": \"Lov 10. april 2015 nr. 17 om finansforetak og finanskonsern § 3-2  jf. § 2-14\", \"licence_code\": \"SKADEFORSI\", \"licence_name\": \"Skadeforsikringsforetak\", \"licence_name_en\": \"Non-life insurance company\", \"registered_date\": \"2022-11-11T00:00:00\", \"service_provider_type\": \"Agent\", \"supervisory_authority\": \"FINANSTILSYNET\"}",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=984851006",
+          "retrieved_at": "2026-10-06T13:27:41.693861+00:00",
+          "source_validity_date": "2022-11-11",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "licence_systeinter_98973",
+          "value": "{\"licence_code\": \"SYSTEINTER\", \"licence_name\": \"Systematisk internaliserer\", \"licence_name_en\": \"Systematic internaliser\", \"registered_date\": \"2018-01-03T00:00:00\", \"service_provider_type\": \"Licensed\", \"supervisory_authority\": \"FINANSTILSYNET\"}",
+          "source_name": "Finanstilsynet Virksomhetsregisteret",
+          "source_url": "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=984851006",
+          "retrieved_at": "2026-10-06T13:27:41.693861+00:00",
+          "source_validity_date": "2018-01-03",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "name",
+          "value": "DNB BANK ASA",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "num_employees",
+          "value": "7353",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "organization_form",
+          "value": "{\"code\": \"ASA\", \"description\": \"Allmennaksjeselskap\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "postal_address",
+          "value": "{\"adresse\": [\"Postboks 1600 Sentrum\"], \"kommune\": \"OSLO\", \"kommunenummer\": \"0301\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"0021\", \"poststed\": \"OSLO\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "primary_industry",
+          "value": "{\"code\": \"64.190\", \"description\": \"Banker og kredittforetak\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_foretaksregisteret",
+          "value": "True",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_frivillighetsregisteret",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_mvaregisteret",
+          "value": "True",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_partiregisteret",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_stiftelsesregisteret",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registration_date",
+          "value": "2002-09-12",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_dagl_dagl_0035861c37",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Kjerstin Elisabeth Rasmussen Braathen\"}, \"role_code\": \"DAGL\", \"role_group_code\": \"DAGL\", \"role_group_name\": \"Daglig leder\", \"role_name\": \"Daglig leder\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006/roller",
+          "retrieved_at": "2026-10-06T13:27:41.403667+00:00",
+          "source_validity_date": "2019-09-05",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_revi_revi_5e3590e0bf",
+          "value": "{\"holder\": {\"holder_type\": \"organization\", \"name\": \"ERNST & YOUNG AS\", \"org_number\": \"976389387\"}, \"role_code\": \"REVI\", \"role_group_code\": \"REVI\", \"role_group_name\": \"Revisor\", \"role_name\": \"Revisor\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006/roller",
+          "retrieved_at": "2026-10-06T13:27:41.403667+00:00",
+          "source_validity_date": "2008-08-14",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_lede_c44862149d",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Eimund Nygaard\"}, \"role_code\": \"LEDE\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styrets leder\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006/roller",
+          "retrieved_at": "2026-10-06T13:27:41.403667+00:00",
+          "source_validity_date": "2026-05-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_00d914e854",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Petter-Børre Furberg\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006/roller",
+          "retrieved_at": "2026-10-06T13:27:41.403667+00:00",
+          "source_validity_date": "2026-05-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_23817e1c35",
+          "value": "{\"elected_by\": \"Representant for de ansatte\", \"holder\": {\"holder_type\": \"person\", \"name\": \"Lillian Christin Hattrem\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006/roller",
+          "retrieved_at": "2026-10-06T13:27:41.403667+00:00",
+          "source_validity_date": "2026-05-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_43f93e1f69",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Vivian Lund\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006/roller",
+          "retrieved_at": "2026-10-06T13:27:41.403667+00:00",
+          "source_validity_date": "2026-05-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_5a6fbb1ce3",
+          "value": "{\"elected_by\": \"Representant for de ansatte\", \"holder\": {\"holder_type\": \"person\", \"name\": \"Haakon Christopher Sandven\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006/roller",
+          "retrieved_at": "2026-10-06T13:27:41.403667+00:00",
+          "source_validity_date": "2026-05-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_937cf1eb36",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Lars Røsæg\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006/roller",
+          "retrieved_at": "2026-10-06T13:27:41.403667+00:00",
+          "source_validity_date": "2026-05-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_a226b1bbd7",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Jens Petter Olsen\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006/roller",
+          "retrieved_at": "2026-10-06T13:27:41.403667+00:00",
+          "source_validity_date": "2026-05-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_a9452a6d61",
+          "value": "{\"elected_by\": \"Representant for de ansatte\", \"holder\": {\"holder_type\": \"person\", \"name\": \"Eli Solhaug\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006/roller",
+          "retrieved_at": "2026-10-06T13:27:41.403667+00:00",
+          "source_validity_date": "2026-05-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_aa9c9a5e8d",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Berit Irene Behring\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006/roller",
+          "retrieved_at": "2026-10-06T13:27:41.403667+00:00",
+          "source_validity_date": "2026-05-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_f117f622c4",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Gro Bakstad\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006/roller",
+          "retrieved_at": "2026-10-06T13:27:41.403667+00:00",
+          "source_validity_date": "2026-05-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_vara_5e0e35e4ea",
+          "value": "{\"elected_by\": \"Representant for de ansatte\", \"holder\": {\"holder_type\": \"person\", \"name\": \"Geir Jarle Ness\"}, \"role_code\": \"VARA\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Varamedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006/roller",
+          "retrieved_at": "2026-10-06T13:27:41.403667+00:00",
+          "source_validity_date": "2026-05-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_vara_87c9935a68",
+          "value": "{\"elected_by\": \"Representant for de ansatte\", \"holder\": {\"holder_type\": \"person\", \"name\": \"Ann-Mari Sæterlid\"}, \"role_code\": \"VARA\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Varamedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006/roller",
+          "retrieved_at": "2026-10-06T13:27:41.403667+00:00",
+          "source_validity_date": "2026-05-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_vara_ff9f066510",
+          "value": "{\"elected_by\": \"Representant for de ansatte\", \"holder\": {\"holder_type\": \"person\", \"name\": \"Sigmund Hollerud Våpenstad\"}, \"role_code\": \"VARA\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Varamedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006/roller",
+          "retrieved_at": "2026-10-06T13:27:41.403667+00:00",
+          "source_validity_date": "2026-05-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "under_compulsory_dissolution",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "under_liquidation",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "website",
+          "value": "www.dnb.no",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+          "retrieved_at": "2026-10-06T13:27:41.074071+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        }
+      ],
+      "source_urls": [
+        "https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query=984851006",
+        "https://data.brreg.no/enhetsregisteret/api/enheter/984851006",
+        "https://data.brreg.no/enhetsregisteret/api/enheter/984851006/roller"
+      ],
+      "retrieval_dates": [
+        "2026-10-06T13:27:41.074071+00:00",
+        "2026-10-06T13:27:41.403667+00:00",
+        "2026-10-06T13:27:41.693861+00:00"
+      ],
+      "changes": [
+        {
+          "fact_key": "name",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "DNB BANK ASA",
+          "explanation": "Fact 'name' was observed for the first time as 'DNB BANK ASA' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "organization_form",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"code\": \"ASA\", \"description\": \"Allmennaksjeselskap\"}",
+          "explanation": "Fact 'organization_form' was observed for the first time as '{\"code\": \"ASA\", \"description\": \"Allmennaksjeselskap\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "primary_industry",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"code\": \"64.190\", \"description\": \"Banker og kredittforetak\"}",
+          "explanation": "Fact 'primary_industry' was observed for the first time as '{\"code\": \"64.190\", \"description\": \"Banker og kredittforetak\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "num_employees",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "7353",
+          "explanation": "Fact 'num_employees' was observed for the first time as '7353' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "has_registered_employees",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "True",
+          "explanation": "Fact 'has_registered_employees' was observed for the first time as 'True' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registration_date",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "2002-09-12",
+          "explanation": "Fact 'registration_date' was observed for the first time as '2002-09-12' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "foundation_date",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "2002-09-10",
+          "explanation": "Fact 'foundation_date' was observed for the first time as '2002-09-10' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "business_address",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"adresse\": [\"Dronning Eufemias gate 30\"], \"kommune\": \"OSLO\", \"kommunenummer\": \"0301\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"0191\", \"poststed\": \"OSLO\"}",
+          "explanation": "Fact 'business_address' was observed for the first time as '{\"adresse\": [\"Dronning Eufemias gate 30\"], \"kommune\": \"OSLO\", \"kommunenummer\": \"0301\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"0191\", \"poststed\": \"OSLO\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "postal_address",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"adresse\": [\"Postboks 1600 Sentrum\"], \"kommune\": \"OSLO\", \"kommunenummer\": \"0301\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"0021\", \"poststed\": \"OSLO\"}",
+          "explanation": "Fact 'postal_address' was observed for the first time as '{\"adresse\": [\"Postboks 1600 Sentrum\"], \"kommune\": \"OSLO\", \"kommunenummer\": \"0301\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"0021\", \"poststed\": \"OSLO\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "website",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "www.dnb.no",
+          "explanation": "Fact 'website' was observed for the first time as 'www.dnb.no' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_foretaksregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "True",
+          "explanation": "Fact 'registered_in_foretaksregisteret' was observed for the first time as 'True' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_mvaregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "True",
+          "explanation": "Fact 'registered_in_mvaregisteret' was observed for the first time as 'True' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_frivillighetsregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'registered_in_frivillighetsregisteret' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_stiftelsesregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'registered_in_stiftelsesregisteret' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_partiregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'registered_in_partiregisteret' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "is_in_group",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "True",
+          "explanation": "Fact 'is_in_group' was observed for the first time as 'True' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "under_liquidation",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'under_liquidation' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "under_compulsory_dissolution",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'under_compulsory_dissolution' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "is_bankrupt",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'is_bankrupt' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "last_submitted_annual_accounts",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "2025",
+          "explanation": "Fact 'last_submitted_annual_accounts' was observed for the first time as '2025' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "capital",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"antallAksjer\": 1440664864, \"belop\": 18008310800.0, \"innfortDato\": \"2026-06-17\", \"type\": \"Aksjekapital\", \"valuta\": \"NOK\"}",
+          "explanation": "Fact 'capital' was observed for the first time as '{\"antallAksjer\": 1440664864, \"belop\": 18008310800.0, \"innfortDato\": \"2026-06-17\", \"type\": \"Aksjekapital\", \"valuta\": \"NOK\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "historical_names",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "[{\"fraDato\": \"2002-09-12 16:22:48\", \"navn\": \"GJENSIDIGE NOR SPAREBANK ASA\", \"tilDato\": \"2004-01-19 09:15:52\"}, {\"fraDato\": \"2004-01-19 09:15:52\", \"navn\": \"DNB NOR BANK ASA\", \"tilDato\": \"2011-11-11 08:45:34\"}]",
+          "explanation": "Fact 'historical_names' was observed for the first time as '[{\"fraDato\": \"2002-09-12 16:22:48\", \"navn\": \"GJENSIDIGE NOR SPAREBANK ASA\", \"tilDato\": \"2004-01-19 09:15:52\"}, {\"fraDato\": \"2004-01-19 09:15:52\", \"navn\": \"DNB NOR BANK ASA\", \"tilDato\": \"2011-11-11 08:45:34\"}]' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        }
+      ],
+      "warnings": [],
+      "errors": [],
+      "summary": "Company 'DNB BANK ASA' (984851006): 51 active source-supported facts (15 role facts) (14 regulatory facts). Refreshed via official registry REST API."
+    },
+    {
+      "org_number": "923609016",
+      "name": "EQUINOR ASA",
+      "status": "live_refreshed",
+      "source_status": {
+        "enhetsregisteret": "success",
+        "roles": "success",
+        "finanstilsynet": "not_registered"
+      },
+      "facts": [
+        {
+          "fact_key": "business_address",
+          "value": "{\"adresse\": [\"Forusbeen 50\"], \"kommune\": \"STAVANGER\", \"kommunenummer\": \"1103\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"4035\", \"poststed\": \"STAVANGER\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "capital",
+          "value": "{\"antallAksjer\": 2390749040, \"belop\": 5976872600.0, \"innfortDato\": \"2026-07-02\", \"type\": \"Aksjekapital\", \"valuta\": \"NOK\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "foundation_date",
+          "value": "1972-09-18",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "has_registered_employees",
+          "value": "True",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "historical_names",
+          "value": "[{\"fraDato\": \"1995-03-12 16:23:00\", \"navn\": \"Den norske stats oljeselskap a.s\", \"tilDato\": \"2001-05-11 08:32:09\"}, {\"fraDato\": \"2001-05-11 08:32:09\", \"navn\": \"STATOIL ASA\", \"tilDato\": \"2007-10-01 06:44:33\"}, {\"fraDato\": \"2007-10-01 06:44:33\", \"navn\": \"STATOILHYDRO ASA\", \"tilDato\": \"2009-11-02 07:56:24\"}, {\"fraDato\": \"2009-11-02 07:56:24\", \"navn\": \"STATOIL ASA\", \"tilDato\": \"2018-05-16 07:05:45\"}]",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "is_bankrupt",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "is_in_group",
+          "value": "True",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "last_submitted_annual_accounts",
+          "value": "2025",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "name",
+          "value": "EQUINOR ASA",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "num_employees",
+          "value": "21272",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "organization_form",
+          "value": "{\"code\": \"ASA\", \"description\": \"Allmennaksjeselskap\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "phone",
+          "value": "51 99 00 00",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "postal_address",
+          "value": "{\"adresse\": [\"Postboks 8500\"], \"kommune\": \"STAVANGER\", \"kommunenummer\": \"1103\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"4035\", \"poststed\": \"STAVANGER\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "primary_industry",
+          "value": "{\"code\": \"06.100\", \"description\": \"Utvinning av råolje\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_foretaksregisteret",
+          "value": "True",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_frivillighetsregisteret",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_mvaregisteret",
+          "value": "True",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_partiregisteret",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_stiftelsesregisteret",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registration_date",
+          "value": "1995-03-12",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_dagl_dagl_5574d60c96",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Anders Opedal\"}, \"role_code\": \"DAGL\", \"role_group_code\": \"DAGL\", \"role_group_name\": \"Daglig leder\", \"role_name\": \"Daglig leder\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller",
+          "retrieved_at": "2026-10-06T13:27:42.617919+00:00",
+          "source_validity_date": "2020-11-02",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_revi_revi_5e3590e0bf",
+          "value": "{\"holder\": {\"holder_type\": \"organization\", \"name\": \"ERNST & YOUNG AS\", \"org_number\": \"976389387\"}, \"role_code\": \"REVI\", \"role_group_code\": \"REVI\", \"role_group_name\": \"Revisor\", \"role_name\": \"Revisor\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller",
+          "retrieved_at": "2026-10-06T13:27:42.617919+00:00",
+          "source_validity_date": "2019-07-12",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_lede_c5ec138a5f",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Jarle Kjell Roth\"}, \"role_code\": \"LEDE\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styrets leder\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller",
+          "retrieved_at": "2026-10-06T13:27:42.617919+00:00",
+          "source_validity_date": "2026-09-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_06d3b874e2",
+          "value": "{\"elected_by\": \"Representant for de ansatte\", \"holder\": {\"holder_type\": \"person\", \"name\": \"Hilde Møllerstad\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller",
+          "retrieved_at": "2026-10-06T13:27:42.617919+00:00",
+          "source_validity_date": "2026-09-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_4ffa1ade83",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Haakon Stephen Bruun-Hanssen\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller",
+          "retrieved_at": "2026-10-06T13:27:42.617919+00:00",
+          "source_validity_date": "2026-09-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_52afa8ecef",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Fernanda Lopes Larsen\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller",
+          "retrieved_at": "2026-10-06T13:27:42.617919+00:00",
+          "source_validity_date": "2026-09-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_bbbccf3b79",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Mikael Roland Karlsson\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller",
+          "retrieved_at": "2026-10-06T13:27:42.617919+00:00",
+          "source_validity_date": "2026-09-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_c40f28e778",
+          "value": "{\"elected_by\": \"Representant for de ansatte\", \"holder\": {\"holder_type\": \"person\", \"name\": \"Geir Leon Vadheim\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller",
+          "retrieved_at": "2026-10-06T13:27:42.617919+00:00",
+          "source_validity_date": "2026-09-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_e0511ff29e",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Anne Drinkwater\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller",
+          "retrieved_at": "2026-10-06T13:27:42.617919+00:00",
+          "source_validity_date": "2026-09-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_e4dff7192a",
+          "value": "{\"elected_by\": \"Representant for de ansatte\", \"holder\": {\"holder_type\": \"person\", \"name\": \"Frank Indreland Gundersen\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller",
+          "retrieved_at": "2026-10-06T13:27:42.617919+00:00",
+          "source_validity_date": "2026-09-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_fbbece8180",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Dawn Summers\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller",
+          "retrieved_at": "2026-10-06T13:27:42.617919+00:00",
+          "source_validity_date": "2026-09-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_vara_42e1e724d0",
+          "value": "{\"elected_by\": \"Representant for de ansatte\", \"holder\": {\"holder_type\": \"person\", \"name\": \"Anette Heggholmen\"}, \"role_code\": \"VARA\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Varamedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller",
+          "retrieved_at": "2026-10-06T13:27:42.617919+00:00",
+          "source_validity_date": "2026-09-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_vara_4b98a23b72",
+          "value": "{\"elected_by\": \"Representant for de ansatte\", \"holder\": {\"holder_type\": \"person\", \"name\": \"Terje Werner Hansen\"}, \"role_code\": \"VARA\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Varamedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller",
+          "retrieved_at": "2026-10-06T13:27:42.617919+00:00",
+          "source_validity_date": "2026-09-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_vara_b1abdbf66f",
+          "value": "{\"elected_by\": \"Representant for de ansatte\", \"holder\": {\"holder_type\": \"person\", \"name\": \"Hans Einar Haldorsen\"}, \"role_code\": \"VARA\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Varamedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller",
+          "retrieved_at": "2026-10-06T13:27:42.617919+00:00",
+          "source_validity_date": "2026-09-04",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "secondary_industry",
+          "value": "{\"code\": \"06.200\", \"description\": \"Utvinning av naturgass\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "tertiary_industry",
+          "value": "{\"code\": \"19.200\", \"description\": \"Produksjon av raffinerte petroleumsprodukter og fossile brenselsprodukter\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "under_compulsory_dissolution",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "under_liquidation",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "website",
+          "value": "www.equinor.com",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-06T13:27:42.302404+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        }
+      ],
+      "source_urls": [
+        "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+        "https://data.brreg.no/enhetsregisteret/api/enheter/923609016/roller"
+      ],
+      "retrieval_dates": [
+        "2026-10-06T13:27:42.302404+00:00",
+        "2026-10-06T13:27:42.617919+00:00"
+      ],
+      "changes": [
+        {
+          "fact_key": "name",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "EQUINOR ASA",
+          "explanation": "Fact 'name' was observed for the first time as 'EQUINOR ASA' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "organization_form",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"code\": \"ASA\", \"description\": \"Allmennaksjeselskap\"}",
+          "explanation": "Fact 'organization_form' was observed for the first time as '{\"code\": \"ASA\", \"description\": \"Allmennaksjeselskap\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "primary_industry",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"code\": \"06.100\", \"description\": \"Utvinning av råolje\"}",
+          "explanation": "Fact 'primary_industry' was observed for the first time as '{\"code\": \"06.100\", \"description\": \"Utvinning av råolje\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "secondary_industry",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"code\": \"06.200\", \"description\": \"Utvinning av naturgass\"}",
+          "explanation": "Fact 'secondary_industry' was observed for the first time as '{\"code\": \"06.200\", \"description\": \"Utvinning av naturgass\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "tertiary_industry",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"code\": \"19.200\", \"description\": \"Produksjon av raffinerte petroleumsprodukter og fossile brenselsprodukter\"}",
+          "explanation": "Fact 'tertiary_industry' was observed for the first time as '{\"code\": \"19.200\", \"description\": \"Produksjon av raffinerte petroleumsprodukter og fossile brenselsprodukter\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "num_employees",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "21272",
+          "explanation": "Fact 'num_employees' was observed for the first time as '21272' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "has_registered_employees",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "True",
+          "explanation": "Fact 'has_registered_employees' was observed for the first time as 'True' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registration_date",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "1995-03-12",
+          "explanation": "Fact 'registration_date' was observed for the first time as '1995-03-12' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "foundation_date",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "1972-09-18",
+          "explanation": "Fact 'foundation_date' was observed for the first time as '1972-09-18' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "business_address",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"adresse\": [\"Forusbeen 50\"], \"kommune\": \"STAVANGER\", \"kommunenummer\": \"1103\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"4035\", \"poststed\": \"STAVANGER\"}",
+          "explanation": "Fact 'business_address' was observed for the first time as '{\"adresse\": [\"Forusbeen 50\"], \"kommune\": \"STAVANGER\", \"kommunenummer\": \"1103\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"4035\", \"poststed\": \"STAVANGER\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "postal_address",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"adresse\": [\"Postboks 8500\"], \"kommune\": \"STAVANGER\", \"kommunenummer\": \"1103\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"4035\", \"poststed\": \"STAVANGER\"}",
+          "explanation": "Fact 'postal_address' was observed for the first time as '{\"adresse\": [\"Postboks 8500\"], \"kommune\": \"STAVANGER\", \"kommunenummer\": \"1103\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"4035\", \"poststed\": \"STAVANGER\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "website",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "www.equinor.com",
+          "explanation": "Fact 'website' was observed for the first time as 'www.equinor.com' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "phone",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "51 99 00 00",
+          "explanation": "Fact 'phone' was observed for the first time as '51 99 00 00' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_foretaksregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "True",
+          "explanation": "Fact 'registered_in_foretaksregisteret' was observed for the first time as 'True' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_mvaregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "True",
+          "explanation": "Fact 'registered_in_mvaregisteret' was observed for the first time as 'True' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_frivillighetsregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'registered_in_frivillighetsregisteret' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_stiftelsesregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'registered_in_stiftelsesregisteret' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_partiregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'registered_in_partiregisteret' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "is_in_group",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "True",
+          "explanation": "Fact 'is_in_group' was observed for the first time as 'True' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "under_liquidation",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'under_liquidation' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "under_compulsory_dissolution",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'under_compulsory_dissolution' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "is_bankrupt",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'is_bankrupt' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "last_submitted_annual_accounts",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "2025",
+          "explanation": "Fact 'last_submitted_annual_accounts' was observed for the first time as '2025' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "capital",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"antallAksjer\": 2390749040, \"belop\": 5976872600.0, \"innfortDato\": \"2026-07-02\", \"type\": \"Aksjekapital\", \"valuta\": \"NOK\"}",
+          "explanation": "Fact 'capital' was observed for the first time as '{\"antallAksjer\": 2390749040, \"belop\": 5976872600.0, \"innfortDato\": \"2026-07-02\", \"type\": \"Aksjekapital\", \"valuta\": \"NOK\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "historical_names",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "[{\"fraDato\": \"1995-03-12 16:23:00\", \"navn\": \"Den norske stats oljeselskap a.s\", \"tilDato\": \"2001-05-11 08:32:09\"}, {\"fraDato\": \"2001-05-11 08:32:09\", \"navn\": \"STATOIL ASA\", \"tilDato\": \"2007-10-01 06:44:33\"}, {\"fraDato\": \"2007-10-01 06:44:33\", \"navn\": \"STATOILHYDRO ASA\", \"tilDato\": \"2009-11-02 07:56:24\"}, {\"fraDato\": \"2009-11-02 07:56:24\", \"navn\": \"STATOIL ASA\", \"tilDato\": \"2018-05-16 07:05:45\"}]",
+          "explanation": "Fact 'historical_names' was observed for the first time as '[{\"fraDato\": \"1995-03-12 16:23:00\", \"navn\": \"Den norske stats oljeselskap a.s\", \"tilDato\": \"2001-05-11 08:32:09\"}, {\"fraDato\": \"2001-05-11 08:32:09\", \"navn\": \"STATOIL ASA\", \"tilDato\": \"2007-10-01 06:44:33\"}, {\"fraDato\": \"2007-10-01 06:44:33\", \"navn\": \"STATOILHYDRO ASA\", \"tilDato\": \"2009-11-02 07:56:24\"}, {\"fraDato\": \"2009-11-02 07:56:24\", \"navn\": \"STATOIL ASA\", \"tilDato\": \"2018-05-16 07:05:45\"}]' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        }
+      ],
+      "warnings": [],
+      "errors": [],
+      "summary": "Company 'EQUINOR ASA' (923609016): 39 active source-supported facts (14 role facts). Refreshed via official registry REST API."
+    },
+    {
+      "org_number": "974760673",
+      "name": "REGISTERENHETEN I BRØNNØYSUND",
+      "status": "live_refreshed",
+      "source_status": {
+        "enhetsregisteret": "success",
+        "roles": "success",
+        "finanstilsynet": "not_registered"
+      },
+      "facts": [
+        {
+          "fact_key": "business_address",
+          "value": "{\"adresse\": [\"Havnegata 48\"], \"kommune\": \"BRØNNØY\", \"kommunenummer\": \"1813\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"8900\", \"poststed\": \"BRØNNØYSUND\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "email",
+          "value": "firmapost@brreg.no",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "has_registered_employees",
+          "value": "True",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "historical_names",
+          "value": "[{\"fraDato\": \"1998-01-16 20:22:18\", \"navn\": \"BRØNNØYSUNDREGISTRENE\", \"tilDato\": \"1999-09-10 18:51:43\"}]",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "is_bankrupt",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "is_in_group",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "name",
+          "value": "REGISTERENHETEN I BRØNNØYSUND",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "num_employees",
+          "value": "487",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "organization_form",
+          "value": "{\"code\": \"ORGL\", \"description\": \"Organisasjonsledd\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "parent_org_number",
+          "value": "912660680",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "phone",
+          "value": "75 00 75 09",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "postal_address",
+          "value": "{\"adresse\": [\"Postboks 900\"], \"kommune\": \"BRØNNØY\", \"kommunenummer\": \"1813\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"8910\", \"poststed\": \"BRØNNØYSUND\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "primary_industry",
+          "value": "{\"code\": \"84.110\", \"description\": \"Generell offentlig administrasjon\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_foretaksregisteret",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_frivillighetsregisteret",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_mvaregisteret",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_partiregisteret",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_stiftelsesregisteret",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registration_date",
+          "value": "1995-08-09",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_dagl_dagl_bb3bf46bae",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Inger Lise Strøm\"}, \"role_code\": \"DAGL\", \"role_group_code\": \"DAGL\", \"role_group_name\": \"Daglig leder\", \"role_name\": \"Daglig leder\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673/roller",
+          "retrieved_at": "2026-10-06T13:27:43.501215+00:00",
+          "source_validity_date": "2026-04-13",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_orgl_orgl_126895df26",
+          "value": "{\"holder\": {\"holder_type\": \"organization\", \"name\": \"NÆRINGS- OG FISKERIDEPARTEMENTET\", \"org_number\": \"912660680\"}, \"role_code\": \"ORGL\", \"role_group_code\": \"ORGL\", \"role_group_name\": \"Org.ledd i offentlig sektor\", \"role_name\": \"Org.ledd i offentlig sektor\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673/roller",
+          "retrieved_at": "2026-10-06T13:27:43.501215+00:00",
+          "source_validity_date": "2014-01-14",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_revi_revi_bf9a9bc33d",
+          "value": "{\"holder\": {\"holder_type\": \"organization\", \"name\": \"RIKSREVISJONEN\", \"org_number\": \"974760843\"}, \"role_code\": \"REVI\", \"role_group_code\": \"REVI\", \"role_group_name\": \"Revisor\", \"role_name\": \"Revisor\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673/roller",
+          "retrieved_at": "2026-10-06T13:27:43.501215+00:00",
+          "source_validity_date": "2020-02-26",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "under_compulsory_dissolution",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "under_liquidation",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "website",
+          "value": "www.brreg.no",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+          "retrieved_at": "2026-10-06T13:27:43.192446+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        }
+      ],
+      "source_urls": [
+        "https://data.brreg.no/enhetsregisteret/api/enheter/974760673",
+        "https://data.brreg.no/enhetsregisteret/api/enheter/974760673/roller"
+      ],
+      "retrieval_dates": [
+        "2026-10-06T13:27:43.192446+00:00",
+        "2026-10-06T13:27:43.501215+00:00"
+      ],
+      "changes": [
+        {
+          "fact_key": "name",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "REGISTERENHETEN I BRØNNØYSUND",
+          "explanation": "Fact 'name' was observed for the first time as 'REGISTERENHETEN I BRØNNØYSUND' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "organization_form",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"code\": \"ORGL\", \"description\": \"Organisasjonsledd\"}",
+          "explanation": "Fact 'organization_form' was observed for the first time as '{\"code\": \"ORGL\", \"description\": \"Organisasjonsledd\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "primary_industry",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"code\": \"84.110\", \"description\": \"Generell offentlig administrasjon\"}",
+          "explanation": "Fact 'primary_industry' was observed for the first time as '{\"code\": \"84.110\", \"description\": \"Generell offentlig administrasjon\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "num_employees",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "487",
+          "explanation": "Fact 'num_employees' was observed for the first time as '487' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "has_registered_employees",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "True",
+          "explanation": "Fact 'has_registered_employees' was observed for the first time as 'True' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registration_date",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "1995-08-09",
+          "explanation": "Fact 'registration_date' was observed for the first time as '1995-08-09' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "parent_org_number",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "912660680",
+          "explanation": "Fact 'parent_org_number' was observed for the first time as '912660680' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "business_address",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"adresse\": [\"Havnegata 48\"], \"kommune\": \"BRØNNØY\", \"kommunenummer\": \"1813\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"8900\", \"poststed\": \"BRØNNØYSUND\"}",
+          "explanation": "Fact 'business_address' was observed for the first time as '{\"adresse\": [\"Havnegata 48\"], \"kommune\": \"BRØNNØY\", \"kommunenummer\": \"1813\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"8900\", \"poststed\": \"BRØNNØYSUND\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "postal_address",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"adresse\": [\"Postboks 900\"], \"kommune\": \"BRØNNØY\", \"kommunenummer\": \"1813\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"8910\", \"poststed\": \"BRØNNØYSUND\"}",
+          "explanation": "Fact 'postal_address' was observed for the first time as '{\"adresse\": [\"Postboks 900\"], \"kommune\": \"BRØNNØY\", \"kommunenummer\": \"1813\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"8910\", \"poststed\": \"BRØNNØYSUND\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "website",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "www.brreg.no",
+          "explanation": "Fact 'website' was observed for the first time as 'www.brreg.no' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "email",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "firmapost@brreg.no",
+          "explanation": "Fact 'email' was observed for the first time as 'firmapost@brreg.no' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "phone",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "75 00 75 09",
+          "explanation": "Fact 'phone' was observed for the first time as '75 00 75 09' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_foretaksregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'registered_in_foretaksregisteret' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_mvaregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'registered_in_mvaregisteret' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_frivillighetsregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'registered_in_frivillighetsregisteret' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_stiftelsesregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'registered_in_stiftelsesregisteret' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_partiregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'registered_in_partiregisteret' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "is_in_group",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'is_in_group' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "under_liquidation",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'under_liquidation' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "under_compulsory_dissolution",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'under_compulsory_dissolution' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "is_bankrupt",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'is_bankrupt' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "historical_names",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "[{\"fraDato\": \"1998-01-16 20:22:18\", \"navn\": \"BRØNNØYSUNDREGISTRENE\", \"tilDato\": \"1999-09-10 18:51:43\"}]",
+          "explanation": "Fact 'historical_names' was observed for the first time as '[{\"fraDato\": \"1998-01-16 20:22:18\", \"navn\": \"BRØNNØYSUNDREGISTRENE\", \"tilDato\": \"1999-09-10 18:51:43\"}]' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        }
+      ],
+      "warnings": [],
+      "errors": [],
+      "summary": "Company 'REGISTERENHETEN I BRØNNØYSUND' (974760673): 25 active source-supported facts (3 role facts). Refreshed via official registry REST API."
+    },
+    {
+      "org_number": "810034882",
+      "name": "SANDNES ELEKTRISKE AS",
+      "status": "live_refreshed",
+      "source_status": {
+        "enhetsregisteret": "success",
+        "roles": "success",
+        "finanstilsynet": "not_registered"
+      },
+      "facts": [
+        {
+          "fact_key": "business_address",
+          "value": "{\"adresse\": [\"Strandgata 21\"], \"kommune\": \"SANDNES\", \"kommunenummer\": \"1108\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"4307\", \"poststed\": \"SANDNES\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "capital",
+          "value": "{\"antallAksjer\": 9500, \"belop\": 2375000.0, \"innfortDato\": \"2026-05-13\", \"type\": \"Aksjekapital\", \"valuta\": \"NOK\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "email",
+          "value": "post@sandneselektriske.no",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "foundation_date",
+          "value": "1977-06-15",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "has_registered_employees",
+          "value": "True",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "historical_names",
+          "value": "[{\"fraDato\": \"1995-02-19 16:52:00\", \"navn\": \"SANDNES ELEKTRISKE FORRETNING AS\", \"tilDato\": \"2024-02-15 12:54:30\"}]",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "is_bankrupt",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "is_in_group",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "last_submitted_annual_accounts",
+          "value": "2025",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "name",
+          "value": "SANDNES ELEKTRISKE AS",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "num_employees",
+          "value": "11",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "organization_form",
+          "value": "{\"code\": \"AS\", \"description\": \"Aksjeselskap\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "phone",
+          "value": "51 68 57 00",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "postal_address",
+          "value": "{\"adresse\": [\"Postboks 32\"], \"kommune\": \"SANDNES\", \"kommunenummer\": \"1108\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"4301\", \"poststed\": \"SANDNES\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "primary_industry",
+          "value": "{\"code\": \"43.210\", \"description\": \"Elektrisk installasjonsarbeid\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_foretaksregisteret",
+          "value": "True",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_frivillighetsregisteret",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_mvaregisteret",
+          "value": "True",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_partiregisteret",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registered_in_stiftelsesregisteret",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "registration_date",
+          "value": "1995-02-19",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_dagl_dagl_e20efe2eae",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Morten Aarrestad\"}, \"role_code\": \"DAGL\", \"role_group_code\": \"DAGL\", \"role_group_name\": \"Daglig leder\", \"role_name\": \"Daglig leder\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882/roller",
+          "retrieved_at": "2026-10-06T13:27:44.338104+00:00",
+          "source_validity_date": "2016-07-11",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_regn_regn_86343a91cb",
+          "value": "{\"holder\": {\"holder_type\": \"organization\", \"name\": \"ACCOUNT GROUP AS\", \"org_number\": \"926732072\"}, \"role_code\": \"REGN\", \"role_group_code\": \"REGN\", \"role_group_name\": \"Regnskapsfører\", \"role_name\": \"Regnskapsfører\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882/roller",
+          "retrieved_at": "2026-10-06T13:27:44.338104+00:00",
+          "source_validity_date": "2023-01-30",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_revi_revi_662c4097cb",
+          "value": "{\"holder\": {\"holder_type\": \"organization\", \"name\": \"ØKSENDAL REVISJON AS\", \"org_number\": \"997039904\"}, \"role_code\": \"REVI\", \"role_group_code\": \"REVI\", \"role_group_name\": \"Revisor\", \"role_name\": \"Revisor\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882/roller",
+          "retrieved_at": "2026-10-06T13:27:44.338104+00:00",
+          "source_validity_date": "2011-12-14",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_lede_2955ecd346",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Jan Marton Aarrestad\"}, \"role_code\": \"LEDE\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styrets leder\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882/roller",
+          "retrieved_at": "2026-10-06T13:27:44.338104+00:00",
+          "source_validity_date": "2024-02-15",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_6dcf3f554c",
+          "value": "{\"elected_by\": \"Representant for A-aksjonærene\", \"holder\": {\"holder_type\": \"person\", \"name\": \"Livar Hadland\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882/roller",
+          "retrieved_at": "2026-10-06T13:27:44.338104+00:00",
+          "source_validity_date": "2024-02-15",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "role_styr_medl_e20efe2eae",
+          "value": "{\"holder\": {\"holder_type\": \"person\", \"name\": \"Morten Aarrestad\"}, \"role_code\": \"MEDL\", \"role_group_code\": \"STYR\", \"role_group_name\": \"Styre\", \"role_name\": \"Styremedlem\"}",
+          "source_name": "Brønnøysund Register Centre - Roles API",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882/roller",
+          "retrieved_at": "2026-10-06T13:27:44.338104+00:00",
+          "source_validity_date": "2024-02-15",
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "secondary_industry",
+          "value": "{\"code\": \"27.510\", \"description\": \"Produksjon av elektriske husholdningsmaskiner og -apparater\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "tertiary_industry",
+          "value": "{\"code\": \"95.220\", \"description\": \"Reparasjon og vedlikehold av husholdningsvarer og hageredskaper\"}",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "under_compulsory_dissolution",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        },
+        {
+          "fact_key": "under_liquidation",
+          "value": "False",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+          "retrieved_at": "2026-10-06T13:27:44.008969+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        }
+      ],
+      "source_urls": [
+        "https://data.brreg.no/enhetsregisteret/api/enheter/810034882",
+        "https://data.brreg.no/enhetsregisteret/api/enheter/810034882/roller"
+      ],
+      "retrieval_dates": [
+        "2026-10-06T13:27:44.008969+00:00",
+        "2026-10-06T13:27:44.338104+00:00"
+      ],
+      "changes": [
+        {
+          "fact_key": "name",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "SANDNES ELEKTRISKE AS",
+          "explanation": "Fact 'name' was observed for the first time as 'SANDNES ELEKTRISKE AS' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "organization_form",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"code\": \"AS\", \"description\": \"Aksjeselskap\"}",
+          "explanation": "Fact 'organization_form' was observed for the first time as '{\"code\": \"AS\", \"description\": \"Aksjeselskap\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "primary_industry",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"code\": \"43.210\", \"description\": \"Elektrisk installasjonsarbeid\"}",
+          "explanation": "Fact 'primary_industry' was observed for the first time as '{\"code\": \"43.210\", \"description\": \"Elektrisk installasjonsarbeid\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "secondary_industry",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"code\": \"27.510\", \"description\": \"Produksjon av elektriske husholdningsmaskiner og -apparater\"}",
+          "explanation": "Fact 'secondary_industry' was observed for the first time as '{\"code\": \"27.510\", \"description\": \"Produksjon av elektriske husholdningsmaskiner og -apparater\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "tertiary_industry",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"code\": \"95.220\", \"description\": \"Reparasjon og vedlikehold av husholdningsvarer og hageredskaper\"}",
+          "explanation": "Fact 'tertiary_industry' was observed for the first time as '{\"code\": \"95.220\", \"description\": \"Reparasjon og vedlikehold av husholdningsvarer og hageredskaper\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "num_employees",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "11",
+          "explanation": "Fact 'num_employees' was observed for the first time as '11' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "has_registered_employees",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "True",
+          "explanation": "Fact 'has_registered_employees' was observed for the first time as 'True' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registration_date",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "1995-02-19",
+          "explanation": "Fact 'registration_date' was observed for the first time as '1995-02-19' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "foundation_date",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "1977-06-15",
+          "explanation": "Fact 'foundation_date' was observed for the first time as '1977-06-15' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "business_address",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"adresse\": [\"Strandgata 21\"], \"kommune\": \"SANDNES\", \"kommunenummer\": \"1108\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"4307\", \"poststed\": \"SANDNES\"}",
+          "explanation": "Fact 'business_address' was observed for the first time as '{\"adresse\": [\"Strandgata 21\"], \"kommune\": \"SANDNES\", \"kommunenummer\": \"1108\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"4307\", \"poststed\": \"SANDNES\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "postal_address",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"adresse\": [\"Postboks 32\"], \"kommune\": \"SANDNES\", \"kommunenummer\": \"1108\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"4301\", \"poststed\": \"SANDNES\"}",
+          "explanation": "Fact 'postal_address' was observed for the first time as '{\"adresse\": [\"Postboks 32\"], \"kommune\": \"SANDNES\", \"kommunenummer\": \"1108\", \"land\": \"Norge\", \"landkode\": \"NO\", \"postnummer\": \"4301\", \"poststed\": \"SANDNES\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "email",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "post@sandneselektriske.no",
+          "explanation": "Fact 'email' was observed for the first time as 'post@sandneselektriske.no' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "phone",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "51 68 57 00",
+          "explanation": "Fact 'phone' was observed for the first time as '51 68 57 00' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_foretaksregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "True",
+          "explanation": "Fact 'registered_in_foretaksregisteret' was observed for the first time as 'True' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_mvaregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "True",
+          "explanation": "Fact 'registered_in_mvaregisteret' was observed for the first time as 'True' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_frivillighetsregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'registered_in_frivillighetsregisteret' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_stiftelsesregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'registered_in_stiftelsesregisteret' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "registered_in_partiregisteret",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'registered_in_partiregisteret' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "is_in_group",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'is_in_group' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "under_liquidation",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'under_liquidation' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "under_compulsory_dissolution",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'under_compulsory_dissolution' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "is_bankrupt",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "False",
+          "explanation": "Fact 'is_bankrupt' was observed for the first time as 'False' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "last_submitted_annual_accounts",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "2025",
+          "explanation": "Fact 'last_submitted_annual_accounts' was observed for the first time as '2025' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "capital",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "{\"antallAksjer\": 9500, \"belop\": 2375000.0, \"innfortDato\": \"2026-05-13\", \"type\": \"Aksjekapital\", \"valuta\": \"NOK\"}",
+          "explanation": "Fact 'capital' was observed for the first time as '{\"antallAksjer\": 9500, \"belop\": 2375000.0, \"innfortDato\": \"2026-05-13\", \"type\": \"Aksjekapital\", \"valuta\": \"NOK\"}' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        },
+        {
+          "fact_key": "historical_names",
+          "change_type": "created",
+          "previous_value": null,
+          "new_value": "[{\"fraDato\": \"1995-02-19 16:52:00\", \"navn\": \"SANDNES ELEKTRISKE FORRETNING AS\", \"tilDato\": \"2024-02-15 12:54:30\"}]",
+          "explanation": "Fact 'historical_names' was observed for the first time as '[{\"fraDato\": \"1995-02-19 16:52:00\", \"navn\": \"SANDNES ELEKTRISKE FORRETNING AS\", \"tilDato\": \"2024-02-15 12:54:30\"}]' from 'Brønnøysundregistrene - Enhetsregisteret'."
+        }
+      ],
+      "warnings": [],
+      "errors": [],
+      "summary": "Company 'SANDNES ELEKTRISKE AS' (810034882): 31 active source-supported facts (6 role facts). Refreshed via official registry REST API."
+    }
+  ]
+}

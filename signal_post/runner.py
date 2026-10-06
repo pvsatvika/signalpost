@@ -24,6 +24,13 @@ from signal_post.storage import (
 )
 
 
+from signal_post.finanstilsynet import (
+    FinanstilsynetClient,
+    FINANSTILSYNET_SOURCE_ID,
+    FINANSTILSYNET_SOURCE_NAME,
+    extract_finanstilsynet_facts_and_evidence,
+    save_finanstilsynet_facts_to_storage,
+)
 from signal_post.roles import (
     BrregRolesClient,
     ROLES_SOURCE_ID,
@@ -37,7 +44,7 @@ class CompanyRunner:
     """
     Evaluator-facing batch execution runner for Norwegian company research.
     Processes one or many organization numbers safely with failure isolation,
-    evidence lineage formatting, multi-source enrichment (Enhetsregisteret + Roles),
+    evidence lineage formatting, multi-source enrichment (Enhetsregisteret + Roles + Finanstilsynet),
     and budget protection.
     """
 
@@ -53,22 +60,19 @@ class CompanyRunner:
         self.client = client or BrregClient()
         self.budget_tracker = budget_tracker or RequestBudgetTracker(self.conn, budget_limit=max_requests_limit)
         self.roles_client = BrregRolesClient(client=self.client, budget_tracker=self.budget_tracker)
+        self.ft_client = FinanstilsynetClient(session=self.client.session, budget_tracker=self.budget_tracker)
 
     def process_company(
         self,
         raw_org_number: str,
         live_refresh: bool = True,
         include_roles: bool = True,
+        include_finanstilsynet: bool = False,
     ) -> Dict[str, Any]:
         """
         Process a single organization number through validation, database lookup,
-        live refresh (if configured), Roles API enrichment (if configured), fact extraction,
-        and evidence formatting.
-
-        :param raw_org_number: Input organization number string.
-        :param live_refresh: If True, attempts live Brønnøysund API lookup/refresh.
-        :param include_roles: If True, attempts Roles API enrichment.
-        :return: Evaluator-ready company result dictionary.
+        live refresh (if configured), Roles API enrichment (if configured), Finanstilsynet enrichment (if configured),
+        fact extraction, and evidence formatting.
         """
         result: Dict[str, Any] = {
             "org_number": str(raw_org_number).strip(),
@@ -77,6 +81,7 @@ class CompanyRunner:
             "source_status": {
                 "enhetsregisteret": "failed",
                 "roles": "not_attempted" if include_roles else "disabled",
+                "finanstilsynet": "not_attempted" if include_finanstilsynet else "disabled",
             },
             "facts": [],
             "source_urls": [],
@@ -221,6 +226,47 @@ class CompanyRunner:
             else:
                 result["source_status"]["roles"] = "served_from_local"
 
+        # 5b. Finanstilsynet API Enrichment if requested and live_refresh enabled
+        if include_finanstilsynet:
+            if live_refresh:
+                try:
+                    if not self.budget_tracker.can_make_request():
+                        result["warnings"].append("Request budget exhausted before Finanstilsynet retrieval. Preserving stored facts.")
+                        result["source_status"]["finanstilsynet"] = "budget_exhausted"
+                    else:
+                        ft_res = self.ft_client.fetch_registry(valid_org)
+                        result["source_status"]["finanstilsynet"] = ft_res.status
+                        if ft_res.is_complete_set:
+                            if ft_res.entity_data:
+                                extracted_ft_facts = extract_finanstilsynet_facts_and_evidence(
+                                    ft_res.entity_data, valid_org, retrieved_at=ft_res.retrieved_at
+                                )
+                                save_finanstilsynet_facts_to_storage(
+                                    self.conn,
+                                    valid_org,
+                                    extracted_ft_facts,
+                                    retrieved_at=ft_res.retrieved_at,
+                                    complete_set=True,
+                                )
+                            elif ft_res.status == "not_registered":
+                                save_finanstilsynet_facts_to_storage(
+                                    self.conn,
+                                    valid_org,
+                                    [],
+                                    retrieved_at=ft_res.retrieved_at,
+                                    complete_set=True,
+                                )
+                        if ft_res.error and ft_res.status not in ("success", "not_registered", "not_found"):
+                            result["warnings"].append(f"Finanstilsynet API retrieval note: {ft_res.error}")
+                except RequestBudgetExceededError:
+                    result["warnings"].append("Request budget exhausted before Finanstilsynet retrieval. Preserving stored profile.")
+                    result["source_status"]["finanstilsynet"] = "budget_exhausted"
+                except Exception as e:
+                    result["warnings"].append(f"Finanstilsynet API retrieval failed ({e}). Base profile preserved.")
+                    result["source_status"]["finanstilsynet"] = "failed"
+            else:
+                result["source_status"]["finanstilsynet"] = "served_from_local"
+
         # 6. Retrieve active facts & evidence lineage from DB
         stored_facts = get_facts(self.conn, valid_org, active_only=True)
         formatted_facts: List[Dict[str, Any]] = []
@@ -231,6 +277,7 @@ class CompanyRunner:
             "brreg_enhetsregisteret": "Brønnøysund Register Centre - Enhetsregisteret",
             "brreg_bulk_enhetsregisteret": "Brønnøysund Bulk Open Data",
             "brreg_roles": ROLES_SOURCE_NAME,
+            "finanstilsynet_registry": FINANSTILSYNET_SOURCE_NAME,
         }
 
         for f in stored_facts:
@@ -264,6 +311,7 @@ class CompanyRunner:
         # 7. Concise Factual Summary
         fact_count = len(formatted_facts)
         role_fact_count = sum(1 for f in formatted_facts if f["fact_key"].startswith("role_"))
+        ft_fact_count = sum(1 for f in formatted_facts if f["fact_key"].startswith("licence_") or f["fact_key"] in ("finanstilsynet_id", "lei_code"))
         has_conflicts = any(f.get("verification_status") == "conflicting" for f in formatted_facts)
         has_corroborated = any(f.get("verification_status") == "corroborated" for f in formatted_facts)
 
@@ -284,7 +332,8 @@ class CompanyRunner:
             status_label = "Loaded from database."
 
         roles_desc = f" ({role_fact_count} role facts)" if role_fact_count > 0 else ""
-        result["summary"] = f"Company '{result['name']}' ({valid_org}): {fact_count} {evidence_desc}{roles_desc}. {status_label}"
+        ft_desc = f" ({ft_fact_count} regulatory facts)" if ft_fact_count > 0 else ""
+        result["summary"] = f"Company '{result['name']}' ({valid_org}): {fact_count} {evidence_desc}{roles_desc}{ft_desc}. {status_label}"
 
         return result
 
@@ -293,6 +342,7 @@ class CompanyRunner:
         org_numbers: List[str],
         live_refresh: bool = True,
         include_roles: bool = True,
+        include_finanstilsynet: bool = False,
         db_identifier: str = "signalpost.db",
         input_source_identifier: str = "input_org_numbers",
         output_mode: str = "batch_result",
@@ -325,16 +375,25 @@ class CompanyRunner:
         roles_source_failed_count = 0
         total_role_facts = 0
 
+        companies_with_regulatory_facts_count = 0
+        finanstilsynet_source_failed_count = 0
+        total_regulatory_facts = 0
+
         for raw_org in org_numbers:
             try:
-                comp_res = self.process_company(raw_org, live_refresh=live_refresh, include_roles=include_roles)
+                comp_res = self.process_company(
+                    raw_org,
+                    live_refresh=live_refresh,
+                    include_roles=include_roles,
+                    include_finanstilsynet=include_finanstilsynet,
+                )
             except Exception as e:
                 # Per-company fault isolation
                 comp_res = {
                     "org_number": str(raw_org).strip(),
                     "name": None,
                     "status": "failed",
-                    "source_status": {"enhetsregisteret": "failed", "roles": "failed"},
+                    "source_status": {"enhetsregisteret": "failed", "roles": "failed", "finanstilsynet": "failed"},
                     "facts": [],
                     "source_urls": [],
                     "retrieval_dates": [],
@@ -375,12 +434,26 @@ class CompanyRunner:
                 else:
                     companies_without_roles_count += 1
 
+                # Finanstilsynet regulatory coverage stats calculation
+                ft_st = src_st.get("finanstilsynet")
+                reg_facts = [
+                    f for f in facts
+                    if f.get("fact_key", "").startswith("licence_") or f.get("fact_key") in ("finanstilsynet_id", "lei_code")
+                ]
+                ft_c = len(reg_facts)
+                total_regulatory_facts += ft_c
+                if ft_c > 0:
+                    companies_with_regulatory_facts_count += 1
+                elif ft_st in ("failed", "budget_exhausted"):
+                    finanstilsynet_source_failed_count += 1
+
         elapsed = time.time() - start_time
         end_dt = datetime.now(timezone.utc)
         request_deltas = self.budget_tracker.count_requests_since_id(anchor_id) if self.budget_tracker else {}
         total_requests_made = sum(request_deltas.values())
         company_fetch_requests = request_deltas.get("company_fetch", 0)
         roles_fetch_requests = request_deltas.get("roles_fetch", 0)
+        finanstilsynet_fetch_requests = request_deltas.get("finanstilsynet_fetch", 0)
         total_req_count = len(org_numbers)
         avg_time = (elapsed / total_req_count) if total_req_count > 0 else 0.0
 
@@ -388,6 +461,7 @@ class CompanyRunner:
         safe_input_id = Path(input_source_identifier).name if input_source_identifier else "input_org_numbers"
 
         avg_roles = round(total_role_facts / companies_with_roles_count, 2) if companies_with_roles_count > 0 else 0.0
+        avg_reg = round(total_regulatory_facts / companies_with_regulatory_facts_count, 2) if companies_with_regulatory_facts_count > 0 else 0.0
 
         run_metrics = {
             "schema_version": "1.0.0",
@@ -408,8 +482,13 @@ class CompanyRunner:
             "roles_source_failed_count": roles_source_failed_count,
             "total_role_facts": total_role_facts,
             "average_role_facts_per_company": avg_roles,
+            "companies_with_regulatory_facts_count": companies_with_regulatory_facts_count,
+            "total_regulatory_facts": total_regulatory_facts,
+            "average_regulatory_facts_per_company": avg_reg,
+            "finanstilsynet_source_failed_count": finanstilsynet_source_failed_count,
             "company_fetch_requests": company_fetch_requests,
             "roles_fetch_requests": roles_fetch_requests,
+            "finanstilsynet_fetch_requests": finanstilsynet_fetch_requests,
             "total_outbound_requests": total_requests_made,
             "request_budget_limit": self.budget_tracker.budget_limit if self.budget_tracker else 2000,
             "estimated_external_api_cost": "$0",
@@ -429,6 +508,7 @@ def run_evaluation(
     db_path: str = "signalpost.db",
     live_refresh: bool = True,
     include_roles: bool = True,
+    include_finanstilsynet: bool = False,
     client: Optional[BrregClient] = None,
     budget_tracker: Optional[RequestBudgetTracker] = None,
     max_requests_limit: int = 2000,
@@ -451,6 +531,7 @@ def run_evaluation(
             org_numbers,
             live_refresh=live_refresh,
             include_roles=include_roles,
+            include_finanstilsynet=include_finanstilsynet,
             db_identifier=db_path,
             input_source_identifier=input_source_identifier,
             output_mode=output_mode,

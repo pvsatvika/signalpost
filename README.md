@@ -18,6 +18,7 @@ Signalpost integrates official public data sources (starting with the **Brønnø
 - **`signal_post.collection`**: Controlled, resumable batch collection workflow executing profile fetching, validation, and SQLite evidence storage.
 - **`signal_post.bulk`**: Memory-efficient streaming bulk open-data importer for Brønnøysund Enhetsregisteret bulk files (`https://data.brreg.no/enhetsregisteret/api/enheter/lastned`), supporting zero-cost local dataset reuse, bounded imports, and conservative live profile protection.
 - **`signal_post.roles`**: Official Brønnøysund Roles API client (`GET https://data.brreg.no/enhetsregisteret/api/enheter/{org_number}/roller`), strict privacy minimization engine (stripping birth dates `fodselsdato` and national identity numbers), role normalization, and SQLite evidence storage (`brreg_roles`).
+- **`signal_post.finanstilsynet`**: Official Finanstilsynet Virksomhetsregisteret API v2 client (`GET https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query={org_number}`), exact 9-digit company matching, privacy minimization, regulatory licence extraction, and SQLite evidence storage (`finanstilsynet_registry`).
 - **`signal_post.budget`**: Daily outbound HTTP request budget tracker enforcing API request limits ($0 cost, hackathon compliant).
 - **`signal_post.cli`**: CLI supporting fetching, storing, refreshing, discovering, collecting, bulk downloading, bulk importing, resuming queue processing, checking collection status, inspecting active facts & evidence, inspecting change history, configuring data sources (`--sources`), and exporting JSON.
 
@@ -32,6 +33,7 @@ Signalpost uses a local SQLite database (`signalpost.db` by default) with 7 core
    - `brreg_enhetsregisteret`: Official Brønnøysund Enhetsregisteret REST API.
    - `brreg_bulk_enhetsregisteret`: Official Brønnøysund Enhetsregisteret Bulk Open Data dataset (`https://data.brreg.no/enhetsregisteret/api/enheter/lastned`).
    - `brreg_roles`: Official Brønnøysund Roles Open API (`https://data.brreg.no/enhetsregisteret/api/enheter/{org_number}/roller`).
+   - `finanstilsynet_registry`: Official Finanstilsynet Virksomhetsregisteret Open API (`https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query={org_number}`).
 3. **`facts`**: Granular key-value assertions (`fact_id`, `org_number`, `fact_key`, `fact_value`, `verification_status`, `first_observed_at`, `last_observed_at`, `is_active`). Active facts are indexed via a partial unique index `(org_number, fact_key) WHERE is_active = 1`.
 4. **`evidence`**: Lineage links for facts containing the exact source URL, retrieval timestamp, validity date, and raw JSON payload (`raw_evidence`).
 5. **`change_history`**: Audit log recording `previous_value` -> `new_value`, change timestamp, and change type (`created`, `updated`, `reasserted`, `conflict`).
@@ -291,7 +293,7 @@ conn.close()
 
 ## Running Tests
 
-The test suite runs 100% offline (90 passing unit tests) using mocked HTTP responses and temporary SQLite databases.
+The test suite runs 100% offline (101 passing unit tests) using mocked HTTP responses and temporary SQLite databases.
 
 Run all tests:
 ```bash

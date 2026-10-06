@@ -1,0 +1,21 @@
+{
+  "benchmark_name": "Live 100-Company Finanstilsynet Exploratory Benchmark (Phase 9)",
+  "input_file": "benchmark_input_100.json",
+  "input_sha256": "76701d63c3dfa74c5348635927818729de72ff8aa25d7a7ab7f07aa6d4b2df68",
+  "results_file": "coverage_finanstilsynet_results_100.json",
+  "results_sha256": "1b61b4f21a0860cea655e21dfcfd1a1b25d55c074a0371993f3845c6d06064c8",
+  "database_file": "coverage_finanstilsynet_100.db",
+  "requested_companies": 100,
+  "processed_companies": 100,
+  "success_rate": "100.0%",
+  "base_requests": 100,
+  "roles_requests": 100,
+  "finanstilsynet_requests": 100,
+  "total_outbound_requests": 300,
+  "elapsed_seconds": 94.87,
+  "average_seconds_per_company": 0.9487,
+  "companies_enriched_finanstilsynet": 1,
+  "total_regulatory_facts": 6,
+  "total_active_facts": 2351,
+  "estimated_external_api_cost": ""
+}

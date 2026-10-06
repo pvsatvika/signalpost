@@ -157,7 +157,7 @@ To reproduce the deterministic 1,000-profile bootstrap from the local bulk datas
 
 ## 7. Running Unit Tests
 
-Run the complete offline test suite (90 passing tests):
+Run the complete offline test suite (101 passing tests):
 ```bash
 python -m unittest discover -s tests
 ```
@@ -217,7 +217,35 @@ The Phase 7 coverage expansion benchmark evaluated the same 100 organization num
 
 ---
 
-## 10. Known Limitations
+## 10. Live 100-Company Finanstilsynet Exploratory Benchmark (Phase 9)
 
-- **Single Primary Source**: Integrated strictly with official Brønnøysund `Enhetsregisteret` and `Roles API`. Additional sources (e.g. `Underenheter`, financial statements) can be added in future stages.
+The Phase 9 exploratory benchmark evaluated the same 100 organization numbers with triple-source enrichment (**Enhetsregisteret + Roles API + Finanstilsynet Virksomhetsregisteret v2**):
+
+- **Command Executed**:
+  ```bash
+  python -m signal_post --run benchmark_input_100.json --output coverage_finanstilsynet_results_100.json --db coverage_finanstilsynet_100.db --sources registry,roles,finanstilsynet --request-budget 350
+  ```
+- **Input File**: `benchmark_input_100.json` (SHA-256: `76701d63c3dfa74c5348635927818729de72ff8aa25d7a7ab7f07aa6d4b2df68`)
+- **Output Result File**: `coverage_finanstilsynet_results_100.json` (SHA-256: `04bb7aeabff5fa4d3be6d6ef38fb9a8ddbd77fcf50c3f59fa07f43399fcab9ae`)
+- **Database File**: `coverage_finanstilsynet_100.db`
+- **Metadata Provenance File**: `coverage_finanstilsynet_metadata.json`
+- **Requested Companies**: `100`
+- **Successfully Processed**: `100` (`100.0%` success rate)
+- **Outbound HTTP Request Breakdown**: `300` total requests (`100` base + `100` roles + `100` finanstilsynet)
+- **Wall-Clock Runtime**: **`94.87 seconds`** (Avg `0.9487s` / company)
+- **Companies Matched in Finanstilsynet**: `1 / 100` (`1.0%` of general diversified company sample)
+- **Regulatory Facts Added**: `6` active facts (`finanstilsynet_id` + 5 active licences for `810359862 AUTOBJØRN A/S`)
+- **Total Combined Active Facts Stored**: `2,351` active facts
+- **Privacy Compliance**: `100%` (0 birth dates, 0 national identity numbers, 0 residential addresses exposed)
+- **PRAGMA integrity_check**: **`ok`**
+- **PRAGMA foreign_key_check**: **`0 violations`**
+- **Evidence Linkage Rate**: **`100.0%`** (2,351 / 2,351 facts linked to complete evidence lineage)
+- **External API/Model Cost**: **`$0.00`** ($0 API subscription fees & $0 LLM fees)
+- **Default Source Strategy Decision**: Keep `--sources registry,roles` as default for general company research; keep `finanstilsynet` as an optional/conditional source via `--sources registry,roles,finanstilsynet`.
+
+---
+
+## 11. Known Limitations
+
+- **Source Scope**: Integrated with official Brønnøysund `Enhetsregisteret`, `Roles API`, and Finanstilsynet `Virksomhetsregisteret v2`. Additional sources (e.g. `Underenheter`, financial statements) can be added in future stages.
 - **Synchronous Execution**: REST API requests execute sequentially per company to maintain strict request budget control.

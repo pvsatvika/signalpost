@@ -35,6 +35,14 @@ This document details the architectural specifications, API requirements, model 
 - **Privacy Enforcement**: Strips birth dates (`fodselsdato`) and national identity numbers (`fnr`) before facts or evidence are normalized or stored.
 - **Holder-Stable Keys**: Hashes holder identity to avoid false changes when board members leave or change ordering.
 
+### Finanstilsynet Virksomhetsregisteret API v2
+- **Provider**: Financial Supervisory Authority of Norway (*Finanstilsynet*).
+- **Endpoint Pattern**: `https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query={org_number}`
+- **Authentication**: **None** (Public Open Data REST API).
+- **Transport**: HTTPS GET returning OpenAPI 3.0 JSON payloads.
+- **Scope & Privacy**: Exact 9-digit company matching (`legalEntityType != 'Person'`). Excludes residential addresses, birth dates, and personal identification numbers.
+- **Licence Facts**: Extracts Finanstilsynet ID, LEI code, and regulatory licences/authorisations.
+
 ---
 
 ## 3. Financial Cost Analysis
@@ -43,6 +51,7 @@ This document details the architectural specifications, API requirements, model 
 | :--- | :--- |
 | **Brønnøysund Registry REST API** | `$0.00` (Free public API under NLOD) |
 | **Brønnøysund Bulk Open Data** | `$0.00` (Free public dataset under NLOD) |
+| **Finanstilsynet Registry API v2** | `$0.00` (Free public Open API) |
 | **Database Storage (SQLite)** | `$0.00` (Local embedded database) |
 | **Model / Inference Fees** | `$0.00` (Zero commercial LLM API fees or subscriptions) |
 | **Total External Financial Cost** | **`$0.00`** |
