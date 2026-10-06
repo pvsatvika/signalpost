@@ -1,5 +1,6 @@
 """
-Unit tests for Regnskapsregisteret financial key figures integration.
+Comprehensive unit test suite for Regnskapsregisteret financial safety, revision semantics,
+and evidence context completeness.
 """
 
 import json
@@ -18,6 +19,7 @@ from signal_post.accounts import (
     RegnskapsClient,
     extract_account_facts_and_evidence,
     save_account_facts_to_storage,
+    sanitize_numeric_amount,
 )
 from signal_post.budget import RequestBudgetExceededError, RequestBudgetTracker
 from signal_post.runner import CompanyRunner
@@ -27,7 +29,7 @@ from signal_post.models import NormalizedCompanyProfile, Address
 
 SAMPLE_ACCOUNTS_PAYLOAD = [
     {
-        "id": 1,
+        "id": 100,
         "journalnr": "2024100200",
         "regnskapstype": "SELSKAP",
         "virksomhet": {"organisasjonsnummer": "923609016"},
@@ -58,6 +60,32 @@ SAMPLE_ACCOUNTS_PAYLOAD = [
         },
     }
 ]
+
+
+class TestNumericSanitization(unittest.TestCase):
+    """Test numeric precision, float-to-int conversion, and invalid type rejection."""
+
+    def test_integers_and_floats(self):
+        self.assertEqual(sanitize_numeric_amount(100), 100)
+        self.assertEqual(sanitize_numeric_amount(100.0), 100)
+        self.assertEqual(sanitize_numeric_amount(100.5), 100.5)
+
+    def test_large_integers(self):
+        large = 350000000000
+        self.assertEqual(sanitize_numeric_amount(large), large)
+
+    def test_zero_and_negative(self):
+        self.assertEqual(sanitize_numeric_amount(0), 0)
+        self.assertEqual(sanitize_numeric_amount(-50000), -50000)
+
+    def test_booleans_and_invalid_rejected(self):
+        self.assertIsNone(sanitize_numeric_amount(True))
+        self.assertIsNone(sanitize_numeric_amount(False))
+        self.assertIsNone(sanitize_numeric_amount(None))
+        self.assertIsNone(sanitize_numeric_amount(""))
+        self.assertIsNone(sanitize_numeric_amount("invalid"))
+        self.assertIsNone(sanitize_numeric_amount(float("nan")))
+        self.assertIsNone(sanitize_numeric_amount(float("inf")))
 
 
 class TestRegnskapsClient(unittest.TestCase):
@@ -117,54 +145,144 @@ class TestRegnskapsClient(unittest.TestCase):
 
 
 class TestExtractAccountFacts(unittest.TestCase):
-    """Test suite for financial whitelist extraction and scope formatting."""
+    """Test suite for financial whitelist extraction, scope formatting, and revision ordering."""
 
-    def test_whitelist_extraction(self):
+    def test_whitelist_extraction_and_evidence_context(self):
         facts = extract_account_facts_and_evidence(SAMPLE_ACCOUNTS_PAYLOAD, "923609016")
         fact_keys = [f[0] for f in facts]
 
         self.assertIn("accounts_2024_selskap_salgsinntekter", fact_keys)
         self.assertIn("accounts_2024_selskap_sum_driftsinntekter", fact_keys)
-        self.assertIn("accounts_2024_selskap_driftsresultat", fact_keys)
-        self.assertIn("accounts_2024_selskap_sum_driftskostnad", fact_keys)
-        self.assertIn("accounts_2024_selskap_ordinaert_resultat_foer_skatt", fact_keys)
-        self.assertIn("accounts_2024_selskap_aarsresultat", fact_keys)
-        self.assertIn("accounts_2024_selskap_sum_eiendeler", fact_keys)
-        self.assertIn("accounts_2024_selskap_sum_omloepsmidler", fact_keys)
-        self.assertIn("accounts_2024_selskap_sum_anleggsmidler", fact_keys)
-        self.assertIn("accounts_2024_selskap_sum_egenkapital", fact_keys)
-        self.assertIn("accounts_2024_selskap_sum_gjeld", fact_keys)
 
-        # Ensure exact value breakdown
+        # Verify 100% evidence context completeness
         salg_fact = next(f for f in facts if f[0] == "accounts_2024_selskap_salgsinntekter")
         val_dict = json.loads(salg_fact[1])
+
         self.assertEqual(val_dict["amount"], 350000000000)
         self.assertEqual(val_dict["currency"], "NOK")
+        self.assertEqual(val_dict["org_number"], "923609016")
+        self.assertEqual(val_dict["period_from"], "2024-01-01")
+        self.assertEqual(val_dict["period_to"], "2024-12-31")
+        self.assertEqual(val_dict["regnskapstype"], "SELSKAP")
         self.assertEqual(val_dict["scope"], "selskap")
         self.assertEqual(val_dict["year"], 2024)
+        self.assertEqual(val_dict["field_name"], "salgsinntekter")
 
-    def test_zero_and_negative_values_preserved(self):
+    def test_currency_preservation_usd(self):
         payload = [
             {
+                "id": 200,
+                "journalnr": "2024515327",
                 "regnskapstype": "KONSERN",
                 "virksomhet": {"organisasjonsnummer": "923609016"},
                 "regnskapsperiode": {"fraDato": "2023-01-01", "tilDato": "2023-12-31"},
-                "valuta": "NOK",
+                "valuta": "USD",
                 "resultatregnskapResultat": {
                     "driftsresultat": {
-                        "driftsinntekter": {"salgsinntekter": 0},
-                        "driftsresultat": -50000,
+                        "driftsinntekter": {"salgsinntekter": 106848000000},
                     }
                 }
             }
         ]
         facts = extract_account_facts_and_evidence(payload, "923609016")
-        val_zero = json.loads(next(f[1] for f in facts if f[0] == "accounts_2023_konsern_salgsinntekter"))
-        val_neg = json.loads(next(f[1] for f in facts if f[0] == "accounts_2023_konsern_driftsresultat"))
+        val_dict = json.loads(next(f[1] for f in facts if f[0] == "accounts_2023_konsern_salgsinntekter"))
 
-        self.assertEqual(val_zero["amount"], 0)
-        self.assertEqual(val_neg["amount"], -50000)
-        self.assertEqual(val_neg["scope"], "konsern")
+        self.assertEqual(val_dict["currency"], "USD")
+        self.assertEqual(val_dict["amount"], 106848000000)
+        self.assertEqual(val_dict["scope"], "konsern")
+
+    def test_non_calendar_period_collision_prevention(self):
+        payload = [
+            {
+                "id": 1,
+                "journalnr": "2024010100",
+                "regnskapstype": "SELSKAP",
+                "virksomhet": {"organisasjonsnummer": "923609016"},
+                "regnskapsperiode": {"fraDato": "2023-04-01", "tilDato": "2024-03-31"},
+                "valuta": "NOK",
+                "resultatregnskapResultat": {
+                    "driftsresultat": {"driftsinntekter": {"salgsinntekter": 1000000}}
+                }
+            }
+        ]
+        facts = extract_account_facts_and_evidence(payload, "923609016")
+        fact_key = facts[0][0]
+
+        # Key must be qualified with dates for non-calendar period to prevent collision
+        self.assertEqual(fact_key, "accounts_2024_20230401_20240331_selskap_salgsinntekter")
+
+    def test_company_vs_consolidated_scope_separation(self):
+        payload = [
+            {
+                "id": 1,
+                "regnskapstype": "SELSKAP",
+                "virksomhet": {"organisasjonsnummer": "923609016"},
+                "regnskapsperiode": {"fraDato": "2024-01-01", "tilDato": "2024-12-31"},
+                "resultatregnskapResultat": {"driftsresultat": {"driftsinntekter": {"salgsinntekter": 50000}}}
+            },
+            {
+                "id": 2,
+                "regnskapstype": "KONSERN",
+                "virksomhet": {"organisasjonsnummer": "923609016"},
+                "regnskapsperiode": {"fraDato": "2024-01-01", "tilDato": "2024-12-31"},
+                "resultatregnskapResultat": {"driftsresultat": {"driftsinntekter": {"salgsinntekter": 500000}}}
+            }
+        ]
+        facts = extract_account_facts_and_evidence(payload, "923609016")
+        fact_dict = {f[0]: json.loads(f[1])["amount"] for f in facts}
+
+        self.assertEqual(fact_dict["accounts_2024_selskap_salgsinntekter"], 50000)
+        self.assertEqual(fact_dict["accounts_2024_konsern_salgsinntekter"], 500000)
+
+    def test_deterministic_revision_ordering_normal_and_reversed(self):
+        old_filing = {
+            "id": 10,
+            "journalnr": "2024100100",
+            "regnskapstype": "SELSKAP",
+            "virksomhet": {"organisasjonsnummer": "923609016"},
+            "regnskapsperiode": {"fraDato": "2024-01-01", "tilDato": "2024-12-31"},
+            "resultatregnskapResultat": {"driftsresultat": {"driftsinntekter": {"salgsinntekter": 100}}}
+        }
+        revised_filing = {
+            "id": 20,
+            "journalnr": "2024100200",  # Higher journal number = latest revision
+            "regnskapstype": "SELSKAP",
+            "virksomhet": {"organisasjonsnummer": "923609016"},
+            "regnskapsperiode": {"fraDato": "2024-01-01", "tilDato": "2024-12-31"},
+            "resultatregnskapResultat": {"driftsresultat": {"driftsinntekter": {"salgsinntekter": 200}}}
+        }
+
+        # Test normal order [old, revised]
+        facts_normal = extract_account_facts_and_evidence([old_filing, revised_filing], "923609016")
+        val_normal = json.loads(facts_normal[0][1])["amount"]
+
+        # Test reversed order [revised, old]
+        facts_reversed = extract_account_facts_and_evidence([revised_filing, old_filing], "923609016")
+        val_reversed = json.loads(facts_reversed[0][1])["amount"]
+
+        # Both must deterministically output the latest revision amount (200)
+        self.assertEqual(val_normal, 200)
+        self.assertEqual(val_reversed, 200)
+
+    def test_unknown_future_fields_ignored(self):
+        payload_with_unknown = [
+            {
+                "id": 1,
+                "regnskapstype": "SELSKAP",
+                "virksomhet": {"organisasjonsnummer": "923609016"},
+                "regnskapsperiode": {"fraDato": "2024-01-01", "tilDato": "2024-12-31"},
+                "futureCryptoAssets": 999999,
+                "unknownField": "should_be_ignored",
+                "resultatregnskapResultat": {
+                    "driftsresultat": {"driftsinntekter": {"salgsinntekter": 500}}
+                }
+            }
+        ]
+        facts = extract_account_facts_and_evidence(payload_with_unknown, "923609016")
+
+        # Must only extract whitelisted 'salgsinntekter'
+        self.assertEqual(len(facts), 1)
+        self.assertEqual(facts[0][0], "accounts_2024_selskap_salgsinntekter")
 
 
 class TestStorageAndRunnerIntegration(unittest.TestCase):

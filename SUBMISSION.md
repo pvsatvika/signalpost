@@ -157,7 +157,7 @@ To reproduce the deterministic 1,000-profile bootstrap from the local bulk datas
 
 ## 7. Running Unit Tests
 
-Run the complete offline test suite (109 passing tests):
+Run the complete offline test suite (117 passing tests):
 ```bash
 python -m unittest discover -s tests
 ```

@@ -8,7 +8,8 @@ Responsibilities:
 - Budget-enforced, identity-verified retrieval of structured annual financial key figures.
 - Strict whitelist of official source fields only (no derived financial ratios, margins, or formulas).
 - Separate company ('SELSKAP') vs consolidated group ('KONSERN') accounts.
-- Period-specific, scope-aware fact keys: accounts_<year>_<scope>_<field_name>.
+- Period-specific, scope-aware fact keys: accounts_<period_key>_<scope>_<field_name>.
+- Deterministic revision ordering: chooses the latest resubmitted statement based on journalnr/id regardless of API array order.
 - Conservative status semantics: distinguish 'success' from 'success_empty', 'not_found', 'failed', 'malformed', 'budget_exhausted'.
 """
 
@@ -16,8 +17,9 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 import json
 import logging
+import math
 import sqlite3
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 import requests
 
 from signal_post.budget import RequestBudgetExceededError, RequestBudgetTracker
@@ -63,6 +65,37 @@ def _get_nested(d: Any, path: Tuple[str, ...]) -> Any:
         else:
             return None
     return curr
+
+
+def sanitize_numeric_amount(val: Any) -> Optional[Union[int, float]]:
+    """
+    Sanitize and validate numeric financial amounts.
+    - Preserves exact Python integers (no float rounding or scientific notation).
+    - Converts float values with zero fractional part to int.
+    - Preserves exact non-zero decimals as float.
+    - Rejects bool, None, NaN, Infinity, and non-numeric strings.
+    - Preserves exact zero (0) and negative values.
+    """
+    if isinstance(val, bool) or val is None:
+        return None
+    if isinstance(val, int):
+        return val
+    if isinstance(val, float):
+        if math.isnan(val) or math.isinf(val):
+            return None
+        return int(val) if val.is_integer() else val
+    if isinstance(val, str):
+        val_str = val.strip()
+        if not val_str:
+            return None
+        try:
+            num = float(val_str)
+            if math.isnan(num) or math.isinf(num):
+                return None
+            return int(num) if num.is_integer() else num
+        except (ValueError, OverflowError):
+            return None
+    return None
 
 
 @dataclass
@@ -154,10 +187,10 @@ class RegnskapsClient:
             result.payload = []
             return result
 
-        # Identity verification
+        # Strict identity verification: every account object must match requested org number
         for acc in accounts_list:
             v_org = acc.get("virksomhet", {}).get("organisasjonsnummer") if isinstance(acc.get("virksomhet"), dict) else None
-            if v_org and str(v_org).strip() != valid_org:
+            if not v_org or str(v_org).strip() != valid_org:
                 result.status = ACCOUNTS_STATUS_FAILED
                 result.error = f"Identity mismatch: account payload org number '{v_org}' does not match requested '{valid_org}'."
                 return result
@@ -174,15 +207,17 @@ def extract_account_facts_and_evidence(
 ) -> List[Tuple[str, str, Dict[str, Any]]]:
     """
     Extract normalized period-specific, scope-aware financial key figures from Regnskapsregisteret payload.
+    - Sorts multiple filings for the same period deterministically by journalnr/id (latest revision selected).
+    - Formats collision-free period keys: accounts_<period_key>_<scope>_<field_name>.
+    - Enforces strict whitelist and numeric precision checks.
     Returns list of (fact_key, deterministic_json_value, evidence_meta).
     """
     valid_org = BrregClient.validate_org_number(org_number)
     now_iso = retrieved_at or datetime.now(timezone.utc).isoformat()
     url = ACCOUNTS_URL_TEMPLATE.format(org=valid_org)
 
-    out: List[Tuple[str, str, Dict[str, Any]]] = []
-    seen_keys: Dict[str, int] = {}
-
+    # 1. Group records by period and scope, then sort by journalnr/id descending to pick the latest revision
+    period_groups: Dict[Tuple[str, str, str], List[Dict[str, Any]]] = {}
     for acc in accounts_payload:
         if not isinstance(acc, dict):
             continue
@@ -191,45 +226,65 @@ def extract_account_facts_and_evidence(
         scope = "konsern" if r_type == "KONSERN" else "selskap"
 
         periode = acc.get("regnskapsperiode") if isinstance(acc.get("regnskapsperiode"), dict) else {}
-        fra_dato = periode.get("fraDato")
-        til_dato = periode.get("tilDato")
+        fra_dato = str(periode.get("fraDato") or "")
+        til_dato = str(periode.get("tilDato") or "")
+
+        if not fra_dato or not til_dato:
+            continue
+
+        group_key = (fra_dato, til_dato, scope)
+        period_groups.setdefault(group_key, []).append(acc)
+
+    # Helper for sorting revisions: journalnr (numeric string), then id (int)
+    def revision_sort_key(acc: Dict[str, Any]) -> Tuple[int, int]:
+        j_str = str(acc.get("journalnr") or "0")
+        j_num = int(j_str) if j_str.isdigit() else 0
+        a_id = acc.get("id")
+        i_num = int(a_id) if isinstance(a_id, (int, str)) and str(a_id).isdigit() else 0
+        return (j_num, i_num)
+
+    out: List[Tuple[str, str, Dict[str, Any]]] = []
+
+    for (fra_dato, til_dato, scope), records in sorted(period_groups.items()):
+        # Sort descending so the latest resubmitted revision is processed first
+        sorted_records = sorted(records, key=revision_sort_key, reverse=True)
+        acc = sorted_records[0]
+
+        r_type = "KONSERN" if scope == "konsern" else "SELSKAP"
+        valuta = str(acc.get("valuta") or "NOK").upper()
+        journalnr = acc.get("journalnr")
 
         year = None
-        if isinstance(til_dato, str) and len(til_dato) >= 4 and til_dato[:4].isdigit():
+        if len(til_dato) >= 4 and til_dato[:4].isdigit():
             year = til_dato[:4]
-        elif isinstance(fra_dato, str) and len(fra_dato) >= 4 and fra_dato[:4].isdigit():
+        elif len(fra_dato) >= 4 and fra_dato[:4].isdigit():
             year = fra_dato[:4]
 
         if not year:
             continue
 
-        valuta = str(acc.get("valuta") or "NOK").upper()
-        journalnr = acc.get("journalnr")
+        # Period tag: standard calendar year (YYYY-01-01 to YYYY-12-31) uses 'YYYY'.
+        # Non-calendar or short periods use 'YYYY_YYYYMMDD_YYYYMMDD' to prevent any key collisions.
+        if fra_dato == f"{year}-01-01" and til_dato == f"{year}-12-31":
+            period_tag = year
+        else:
+            f_nodash = fra_dato.replace("-", "")
+            t_nodash = til_dato.replace("-", "")
+            period_tag = f"{year}_{f_nodash}_{t_nodash}"
 
         for path, field_name in WHITELISTED_FINANCIAL_FIELDS:
             raw_val = _get_nested(acc, path)
-            if raw_val is None:
+            num_val = sanitize_numeric_amount(raw_val)
+            if num_val is None:
                 continue
 
-            if isinstance(raw_val, (int, float)) and not isinstance(raw_val, bool):
-                num_val = raw_val
-            elif isinstance(raw_val, str) and raw_val.replace("-", "").replace(".", "").isdigit():
-                try:
-                    num_val = float(raw_val) if "." in raw_val else int(raw_val)
-                except ValueError:
-                    continue
-            else:
-                continue
-
-            base_key = f"accounts_{year}_{scope}_{field_name}"
-            count = seen_keys.get(base_key, 0) + 1
-            seen_keys[base_key] = count
-            fact_key = base_key if count == 1 else f"{base_key}_j{journalnr}" if journalnr else f"{base_key}_{count}"
+            fact_key = f"accounts_{period_tag}_{scope}_{field_name}"
 
             fact_value_dict = {
                 "amount": num_val,
                 "currency": valuta,
                 "field_name": field_name,
+                "org_number": valid_org,
                 "period_from": fra_dato,
                 "period_to": til_dato,
                 "regnskapstype": r_type,
@@ -244,7 +299,7 @@ def extract_account_facts_and_evidence(
             raw_ev_dict = {
                 "journalnr": journalnr,
                 "org_number": valid_org,
-                "regnskapsperiode": periode,
+                "regnskapsperiode": {"fraDato": fra_dato, "tilDato": til_dato},
                 "regnskapstype": r_type,
                 "valuta": valuta,
                 "field": field_name,

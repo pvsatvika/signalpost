@@ -295,7 +295,7 @@ conn.close()
 
 ## Running Tests
 
-The test suite runs 100% offline (101 passing unit tests) using mocked HTTP responses and temporary SQLite databases.
+The test suite runs 100% offline (117 passing unit tests) using mocked HTTP responses and temporary SQLite databases.
 
 Run all tests:
 ```bash
@@ -306,6 +306,6 @@ python -m unittest discover -s tests
 
 ## Known Limitations
 
-- **Single Primary Public Source**: Currently integrated strictly with Brønnøysund `Enhetsregisteret`. Additional sources (e.g., `Underenheter`, financial statements) will be integrated in subsequent phases.
-- **Synchronous Execution**: Operations process individual organization numbers synchronously.
+- **Source Scope**: Integrated with official Brønnøysund `Enhetsregisteret`, `Roles API`, `Regnskapsregisteret`, and Finanstilsynet `Virksomhetsregisteret v2`.
+- **Synchronous Execution**: Operations process individual organization numbers synchronously to ensure strict request budget compliance.
 
