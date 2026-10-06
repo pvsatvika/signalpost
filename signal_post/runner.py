@@ -54,6 +54,13 @@ from signal_post.roles import (
     extract_role_facts_and_evidence,
     save_role_facts_to_storage,
 )
+from signal_post.subentities import (
+    BrregSubentitiesClient,
+    SUBENTITIES_SOURCE_ID,
+    SUBENTITIES_SOURCE_NAME,
+    extract_subentity_facts_and_evidence,
+    save_subentity_facts_to_storage,
+)
 
 
 class CompanyRunner:
@@ -79,6 +86,7 @@ class CompanyRunner:
         self.ft_client = FinanstilsynetClient(session=self.client.session, budget_tracker=self.budget_tracker)
         self.accounts_client = RegnskapsClient(client=self.client, session=self.client.session, budget_tracker=self.budget_tracker)
         self.fullmakt_client = BrregFullmaktClient(client=self.client, session=self.client.session, budget_tracker=self.budget_tracker)
+        self.subentities_client = BrregSubentitiesClient(client=self.client, session=self.client.session, budget_tracker=self.budget_tracker)
 
     def process_company(
         self,
@@ -88,11 +96,12 @@ class CompanyRunner:
         include_finanstilsynet: bool = False,
         include_accounts: bool = False,
         include_fullmakt: bool = False,
+        include_subentities: bool = False,
     ) -> Dict[str, Any]:
         """
         Process a single organization number through validation, database lookup,
         live refresh (if configured), Roles API enrichment (if configured), Finanstilsynet enrichment (if configured),
-        Regnskapsregisteret enrichment (if configured), Fullmakt enrichment (if configured), fact extraction, and evidence formatting.
+        Regnskapsregisteret enrichment (if configured), Fullmakt enrichment (if configured), Underenheter enrichment (if configured), fact extraction, and evidence formatting.
         """
         result: Dict[str, Any] = {
             "org_number": str(raw_org_number).strip(),
@@ -105,6 +114,7 @@ class CompanyRunner:
                 "accounts": "not_attempted" if include_accounts else "disabled",
                 "signatur": "not_attempted" if include_fullmakt else "disabled",
                 "prokura": "not_attempted" if include_fullmakt else "disabled",
+                "subentities": "not_attempted" if include_subentities else "disabled",
             },
             "facts": [],
             "source_urls": [],
@@ -415,6 +425,52 @@ class CompanyRunner:
                 result["source_status"]["signatur"] = "served_from_local"
                 result["source_status"]["prokura"] = "served_from_local"
 
+        # 5e. Underenheter (Operating Units) API Enrichment if requested and live_refresh enabled
+        if include_subentities:
+            if live_refresh:
+                try:
+                    if not self.budget_tracker.can_make_request():
+                        result["warnings"].append("Request budget exhausted before Underenheter retrieval. Preserving stored subentities if any.")
+                        result["source_status"]["subentities"] = "budget_exhausted"
+                    else:
+                        sub_res = self.subentities_client.fetch_subentities(valid_org)
+                        result["source_status"]["subentities"] = sub_res.status
+                        if sub_res.is_complete_set:
+                            extracted_sub_facts = extract_subentity_facts_and_evidence(
+                                sub_res.subentities, valid_org, sub_res.source_url, retrieved_at=sub_res.retrieved_at
+                            )
+                            save_subentity_facts_to_storage(
+                                self.conn,
+                                valid_org,
+                                extracted_sub_facts,
+                                retrieved_at=sub_res.retrieved_at,
+                                complete_set=True,
+                            )
+                        elif sub_res.status == "truncated":
+                            extracted_sub_facts = extract_subentity_facts_and_evidence(
+                                sub_res.subentities, valid_org, sub_res.source_url, retrieved_at=sub_res.retrieved_at
+                            )
+                            save_subentity_facts_to_storage(
+                                self.conn,
+                                valid_org,
+                                extracted_sub_facts,
+                                retrieved_at=sub_res.retrieved_at,
+                                complete_set=False,
+                            )
+                            result["warnings"].append("Subentity operating units truncated due to safety pagination cap.")
+                        if sub_res.is_truncated and sub_res.status != "truncated":
+                            result["warnings"].append("Subentity operating units truncated due to safety pagination cap.")
+                        if sub_res.error and sub_res.status not in ("success", "success_empty", "truncated", "not_found"):
+                            result["warnings"].append(f"Underenheter API retrieval note: {sub_res.error}")
+                except RequestBudgetExceededError:
+                    result["warnings"].append("Request budget exhausted before Underenheter retrieval. Preserving stored profile.")
+                    result["source_status"]["subentities"] = "budget_exhausted"
+                except Exception as e:
+                    result["warnings"].append(f"Underenheter API retrieval failed ({e}). Base profile preserved.")
+                    result["source_status"]["subentities"] = "failed"
+            else:
+                result["source_status"]["subentities"] = "served_from_local"
+
         # 6. Retrieve active facts & evidence lineage from DB
         stored_facts = get_facts(self.conn, valid_org, active_only=True)
         formatted_facts: List[Dict[str, Any]] = []
@@ -429,6 +485,7 @@ class CompanyRunner:
             "brreg_accounts_key_figures": ACCOUNTS_SOURCE_NAME,
             FULLMAKT_SIGNATUR_SOURCE_ID: FULLMAKT_SIGNATUR_SOURCE_NAME,
             FULLMAKT_PROKURA_SOURCE_ID: FULLMAKT_PROKURA_SOURCE_NAME,
+            SUBENTITIES_SOURCE_ID: SUBENTITIES_SOURCE_NAME,
         }
 
         for f in stored_facts:
@@ -498,6 +555,7 @@ class CompanyRunner:
         include_finanstilsynet: bool = False,
         include_accounts: bool = False,
         include_fullmakt: bool = False,
+        include_subentities: bool = False,
         db_identifier: str = "signalpost.db",
         input_source_identifier: str = "input_org_numbers",
         output_mode: str = "batch_result",
@@ -511,7 +569,8 @@ class CompanyRunner:
         :param include_roles: If True, attempts Roles API enrichment.
         :param include_finanstilsynet: If True, attempts Finanstilsynet API enrichment.
         :param include_accounts: If True, attempts Regnskapsregisteret API enrichment.
-        :param include_fullmakt: If True, attempts Fullmakt (signature & procuration) API enrichment.
+        :param include_fullmakt: If True, attempts Fullmakt API enrichment.
+        :param include_subentities: If True, attempts Underenheter API enrichment.
         :param db_identifier: Path or identifier of SQLite database file.
         :param input_source_identifier: Path or identifier of input source.
         :param output_mode: Output destination identifier ('file', 'stdout', etc.).
@@ -546,6 +605,13 @@ class CompanyRunner:
         prokura_source_failed_count = 0
         total_fullmakt_facts = 0
 
+        companies_with_subentities_count = 0
+        companies_without_subentities_count = 0
+        subentities_source_failed_count = 0
+        total_subentities_discovered = 0
+        total_subentity_facts = 0
+        truncated_subentities_count = 0
+
         for raw_org in org_numbers:
             try:
                 comp_res = self.process_company(
@@ -555,6 +621,7 @@ class CompanyRunner:
                     include_finanstilsynet=include_finanstilsynet,
                     include_accounts=include_accounts,
                     include_fullmakt=include_fullmakt,
+                    include_subentities=include_subentities,
                 )
             except Exception as e:
                 # Per-company fault isolation
@@ -569,6 +636,7 @@ class CompanyRunner:
                         "accounts": "failed",
                         "signatur": "failed",
                         "prokura": "failed",
+                        "subentities": "failed",
                     },
                     "facts": [],
                     "source_urls": [],
@@ -644,6 +712,30 @@ class CompanyRunner:
                 if src_st.get("prokura") in ("failed", "budget_exhausted"):
                     prokura_source_failed_count += 1
 
+                # Subentities operating unit coverage stats calculation
+                sub_st = src_st.get("subentities")
+                sub_facts = [f for f in facts if f.get("fact_key", "").startswith("subentity_")]
+                sub_c = len(sub_facts)
+                total_subentity_facts += sub_c
+
+                # Check subentity count fact
+                sc_fact = next((f for f in facts if f.get("fact_key") == "subentity_count"), None)
+                if sc_fact:
+                    try:
+                        discovered_count = int(sc_fact.get("value", 0))
+                        total_subentities_discovered += discovered_count
+                        if discovered_count > 0:
+                            companies_with_subentities_count += 1
+                        else:
+                            companies_without_subentities_count += 1
+                    except Exception:
+                        pass
+                elif sub_st in ("failed", "budget_exhausted"):
+                    subentities_source_failed_count += 1
+
+                if sub_st == "truncated":
+                    truncated_subentities_count += 1
+
         elapsed = time.time() - start_time
         end_dt = datetime.now(timezone.utc)
         request_deltas = self.budget_tracker.count_requests_since_id(anchor_id) if self.budget_tracker else {}
@@ -654,6 +746,7 @@ class CompanyRunner:
         accounts_fetch_requests = request_deltas.get("accounts_fetch", 0)
         signatur_fetch_requests = request_deltas.get("signatur_fetch", 0)
         prokura_fetch_requests = request_deltas.get("prokura_fetch", 0)
+        subentities_fetch_requests = request_deltas.get("subentities_fetch", 0)
         total_req_count = len(org_numbers)
         avg_time = (elapsed / total_req_count) if total_req_count > 0 else 0.0
 
@@ -664,6 +757,7 @@ class CompanyRunner:
         avg_reg = round(total_regulatory_facts / companies_with_regulatory_facts_count, 2) if companies_with_regulatory_facts_count > 0 else 0.0
         avg_fin = round(total_financial_facts / companies_with_financial_facts_count, 2) if companies_with_financial_facts_count > 0 else 0.0
         avg_fm = round(total_fullmakt_facts / companies_with_fullmakt_facts_count, 2) if companies_with_fullmakt_facts_count > 0 else 0.0
+        avg_sub = round(total_subentity_facts / companies_with_subentities_count, 2) if companies_with_subentities_count > 0 else 0.0
 
         run_metrics = {
             "schema_version": "1.0.0",
@@ -697,12 +791,20 @@ class CompanyRunner:
             "average_fullmakt_facts_per_company": avg_fm,
             "signatur_source_failed_count": signatur_source_failed_count,
             "prokura_source_failed_count": prokura_source_failed_count,
+            "companies_with_subentities_count": companies_with_subentities_count,
+            "companies_without_subentities_count": companies_without_subentities_count,
+            "subentities_source_failed_count": subentities_source_failed_count,
+            "total_subentities_discovered": total_subentities_discovered,
+            "total_subentity_facts": total_subentity_facts,
+            "average_subentity_facts_per_company": avg_sub,
+            "truncated_subentities_count": truncated_subentities_count,
             "company_fetch_requests": company_fetch_requests,
             "roles_fetch_requests": roles_fetch_requests,
             "finanstilsynet_fetch_requests": finanstilsynet_fetch_requests,
             "accounts_fetch_requests": accounts_fetch_requests,
             "signatur_fetch_requests": signatur_fetch_requests,
             "prokura_fetch_requests": prokura_fetch_requests,
+            "subentities_fetch_requests": subentities_fetch_requests,
             "total_outbound_requests": total_requests_made,
             "request_budget_limit": self.budget_tracker.budget_limit if self.budget_tracker else 2000,
             "estimated_external_api_cost": "$0",
@@ -725,6 +827,7 @@ def run_evaluation(
     include_finanstilsynet: bool = False,
     include_accounts: bool = False,
     include_fullmakt: bool = False,
+    include_subentities: bool = False,
     client: Optional[BrregClient] = None,
     budget_tracker: Optional[RequestBudgetTracker] = None,
     max_requests_limit: int = 2000,
@@ -750,6 +853,7 @@ def run_evaluation(
             include_finanstilsynet=include_finanstilsynet,
             include_accounts=include_accounts,
             include_fullmakt=include_fullmakt,
+            include_subentities=include_subentities,
             db_identifier=db_path,
             input_source_identifier=input_source_identifier,
             output_mode=output_mode,

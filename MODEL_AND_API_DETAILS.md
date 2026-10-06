@@ -60,6 +60,15 @@ This document details the architectural specifications, API requirements, model 
 - **Organization Form Pre-checking**: Uses Enhetsregisteret organization form classification to skip unnecessary HTTP requests for forms that do not maintain machine authority routines (e.g. `ORGL`, `ADM`, `STAT`, `FYLK`, `KOMM`, `PERS`).
 - **Holder-Stable Keys**: Normalized combination and text rule facts keyed deterministically to avoid false changes.
 
+### Underenheter Operating Units REST API
+- **Provider**: Brønnøysund Register Centre (*Enhetsregisteret / Underenheter*).
+- **Endpoint Pattern**: `https://data.brreg.no/enhetsregisteret/api/underenheter?overordnetEnhet={org_number}`
+- **Authentication**: **None** (Public Open Data REST API under NLOD).
+- **Transport**: HTTPS GET returning paginated JSON lists of operating units (`_embedded.underenheter`).
+- **Parent/Child Scope Separation**: Subentity facts (addresses, employee counts, activities) strictly preserve `relationship = operating_unit_of` and are never merged into parent legal entity attributes.
+- **Employee Suppression Semantics**: Respects `harRegistrertAntallAnsatte=True` without inventing an exact zero when `antallAnsatte` is suppressed by Brønnøysund.
+- **Bounded Pagination Safety**: Implements deterministic sorting (`sort=organisasjonsnummer,ASC`) and safety limits (max pages, max subentities) to cap unbounded loops, issuing `subentity_result_truncated` warnings when capped.
+
 ---
 
 ## 3. Financial Cost Analysis

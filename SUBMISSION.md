@@ -305,11 +305,41 @@ The Phase 11 benchmark evaluated the 100 organization numbers with quadruple-sou
 
 ---
 
-## 13. Limitations & Scope
+## 13. Live 100-Company Underenheter Benchmark (Phase 12)
 
-- **Data Source Scope**: Signalpost integrates official open APIs from Brønnøysund (`Enhetsregisteret`, `Roles API`, `Regnskapsregisteret`, `Fullmakttjenesten`) and Finanstilsynet (`Virksomhetsregisteret v2`).
+The Phase 12 benchmark evaluated the 100 organization numbers with quadruple-source enrichment (**Enhetsregisteret + Roles API + Regnskapsregisteret + Underenheter**):
+
+- **Command Executed**:
+  ```bash
+  python -m signal_post --run benchmark_input_100.json --output coverage_subentities_results_100.json --db coverage_subentities_100.db --sources registry,roles,accounts,subentities --request-budget 1500
+  ```
+- **Input File**: `benchmark_input_100.json` (SHA-256: `76701d63c3dfa74c5348635927818729de72ff8aa25d7a7ab7f07aa6d4b2df68`)
+- **Output Result File**: `coverage_subentities_results_100.json` (SHA-256: `e58ae110019b14a12397859e0879a3ae8b9bf0b7c5aa8ff5e819c4ebaa2db8a0`)
+- **Database File**: `coverage_subentities_100.db`
+- **Metadata Provenance File**: `coverage_subentities_metadata.json`
+- **Requested Companies**: `100`
+- **Successfully Processed**: `100` (`100.0%` success rate)
+- **Outbound HTTP Request Breakdown**: `400` total requests (`100` base + `100` roles + `100` accounts + `100` subentities)
+- **Pagination Requests**: `0` additional pagination requests required for this sample (all fetched within single page)
+- **Wall-Clock Runtime**: **`163.75 seconds`** (Avg `1.6375s` / company)
+- **Companies Enriched with Operating Units**: `67 / 100` (`67.0%` of benchmark sample have registered operating units / branches)
+- **Total Operating Units Discovered**: `71` underenheter
+- **Total Subentity Facts Published**: `551` active child-scoped facts (`subentity_<child_org>_location_address`, `subentity_<child_org>_industry`, `subentity_<child_org>_employee_count`, etc.)
+- **Total Combined Active Facts Stored**: `5,074` active facts (`1,907` base + `438` roles + `2,178` accounts + `551` subentities)
+- **PRAGMA integrity_check**: **`ok`**
+- **PRAGMA foreign_key_check**: **`0 violations`**
+- **Evidence Linkage Rate**: **`100.0%`** (5,074 / 5,074 facts linked to complete evidence lineage)
+- **External API/Model Cost**: **`$0.00`** ($0 API subscription fees & $0 LLM fees)
+- **Default Source Strategy Decision**: Default sources remain `--sources registry,roles,accounts` (300 requests, 71.94s, 4,523 facts). Underenheter is provided as an optional source (`--sources registry,roles,accounts,subentities`) when physical operating locations and branch activity details are needed.
+
+---
+
+## 14. Limitations & Scope
+
+- **Data Source Scope**: Signalpost integrates official open APIs from Brønnøysund (`Enhetsregisteret`, `Roles API`, `Regnskapsregisteret`, `Fullmakttjenesten`, `Underenheter`) and Finanstilsynet (`Virksomhetsregisteret v2`).
 - **Financial Statement Availability**: Statements are only available for entities required to submit annual accounts to Regnskapsregisteret (e.g. `AS`, `ASA`). Non-reporting entity forms (e.g. sole proprietorships `ENK`) return `success_empty` or `not_found` cleanly.
 - **Authority Rule Machine Coverage**: Signature and procuration machine rules in Fullmakttjenesten are available for supported commercial forms (`AS`, `ENK`, `ANS`, etc.). Unmaintained forms (`ORGL`, `ADM`, etc.) return `unsupported_org_form` without failing.
+- **Operating Unit Boundaries**: Subentity attributes (addresses, employee counts, activities) are strictly child-scoped and are never merged into parent legal entity attributes.
 - **Currency & Scaling**: Signalpost preserves exact source-supplied numeric amounts and currencies (`valuta`) without amount scaling or currency conversion. Statements missing currency metadata are withheld from monetary fact publication.
 - **Duplicate Resubmissions**: Identical duplicate filings are deduplicated; conflicting resubmissions for the same period/scope are withheld from clean publication to prevent published ambiguity.
 - **Synchronous API Execution**: Outbound REST requests execute sequentially per company to maintain strict request budget control.
