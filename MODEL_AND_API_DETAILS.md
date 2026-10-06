@@ -69,6 +69,15 @@ This document details the architectural specifications, API requirements, model 
 - **Employee Suppression Semantics**: Respects `harRegistrertAntallAnsatte=True` without inventing an exact zero when `antallAnsatte` is suppressed by Brønnøysund.
 - **Bounded Pagination Safety**: Implements deterministic sorting (`sort=organisasjonsnummer,ASC`) and safety limits (max pages, max subentities) to cap unbounded loops, issuing `subentity_result_truncated` warnings when capped.
 
+### Corporate Group Structure REST API
+- **Provider**: Brønnøysund Register Centre (*Enhetsregisteret / Konsernstruktur*).
+- **Endpoint Pattern**: `https://data.brreg.no/enhetsregisteret/api/konsernstruktur/{org_number}`
+- **Authentication**: **None** (Public Open Data REST API under NLOD).
+- **Transport**: HTTPS GET returning complete corporate group hierarchy JSON trees rooted at ultimate parent companies.
+- **Relationship Scoping**: Group facts are stored as relationship-scoped entries (`group_relation_<parent>_<child>_<code...>`), ensuring corporate group relationships never overwrite direct legal entity attributes.
+- **Status Classification**: Distinguishes HTTP 200 (corporate group present) from HTTP 404 (company is not part of a registered corporate group).
+- **Safety Traversal Caps**: Implements set-based cycle detection and bounded safety limits (`max_nodes=500`, `max_depth=20`) to prevent infinite loops during hierarchy tree parsing.
+
 ---
 
 ## 3. Financial Cost Analysis
@@ -79,6 +88,9 @@ This document details the architectural specifications, API requirements, model 
 | **Brønnøysund Bulk Open Data** | `$0.00` (Free public dataset under NLOD) |
 | **Brønnøysund Roles Open API** | `$0.00` (Free public API under NLOD) |
 | **Brønnøysund Regnskapsregisteret REST API** | `$0.00` (Free public API under NLOD) |
+| **Brønnøysund Fullmakttjenesten Open API** | `$0.00` (Free public API under NLOD) |
+| **Brønnøysund Underenheter Open API** | `$0.00` (Free public API under NLOD) |
+| **Brønnøysund Corporate Group Structure Open API** | `$0.00` (Free public API under NLOD) |
 | **Finanstilsynet Registry API v2** | `$0.00` (Free public Open API) |
 | **Database Storage (SQLite)** | `$0.00` (Local embedded database) |
 | **Model / Inference Fees** | `$0.00` (Zero commercial LLM API fees or subscriptions) |

@@ -22,8 +22,9 @@ Signalpost integrates official public data sources (starting with the **Brønnø
 - **`signal_post.accounts`**: Official Brønnøysund Regnskapsregisteret REST API client (`GET https://data.brreg.no/regnskapsregisteret/regnskap/{org_number}`), strict whitelist of approved source key figures (no derived ratios/formulas), company vs group scope separation, period-specific fact key formatting, and SQLite evidence storage (`brreg_accounts_key_figures`).
 - **`signal_post.fullmakt`**: Official public Brønnøysund Fullmakttjenesten API client (`GET https://data.brreg.no/fullmakt/enheter/{org_number}/signatur` and `/prokura`), unauthenticated signature and procuration authority rules, strict privacy barrier (stripping birth dates, national identity numbers, and D-numbers), holder-stable rule/combination normalization, and SQLite evidence storage (`brreg_fullmakt_signatur` and `brreg_fullmakt_prokura`).
 - **`signal_post.subentities`**: Official Brønnøysund Underenheter API client (`GET https://data.brreg.no/enhetsregisteret/api/underenheter?overordnetEnhet={org_number}`), operating unit / branch discovery, strict parent/child identity separation, employee suppression semantics, bounded pagination/truncation safety, and SQLite evidence storage (`brreg_subentities`).
+- **`signal_post.group_structure`**: Official Brønnøysund Corporate Group Structure API client (`GET https://data.brreg.no/enhetsregisteret/api/konsernstruktur/{org_number}`), corporate group hierarchy traversal, root company identification, relationship-scoped facts (`group_relation_<parent>_<child>_<code...>`), cycle protection, bounded max-depth / max-node safety, and SQLite evidence storage (`brreg_group_structure`).
 - **`signal_post.budget`**: Daily outbound HTTP request budget tracker enforcing API request limits ($0 cost, hackathon compliant).
-- **`signal_post.cli`**: CLI supporting fetching, storing, refreshing, discovering, collecting, bulk downloading, bulk importing, resuming queue processing, checking collection status, inspecting active facts & evidence, inspecting change history, configuring data sources (`--sources`), and exporting JSON.
+- **`signal_post.cli`**: CLI supporting fetching, storing, refreshing, discovering, collecting, bulk downloading, bulk importing, resuming queue processing, checking collection status, inspecting active facts & evidence, inspecting change history, configuring data sources (`--sources`), and exporting JSON. Default enabled sources: `registry,roles,accounts,subentities`.
 
 ---
 
@@ -41,6 +42,7 @@ Signalpost uses a local SQLite database (`signalpost.db` by default) with 7 core
    - `brreg_fullmakt_signatur`: Official Brønnøysund Fullmakttjenesten Signature Rights API (`https://data.brreg.no/fullmakt/enheter/{org_number}/signatur`).
    - `brreg_fullmakt_prokura`: Official Brønnøysund Fullmakttjenesten Procuration Rights API (`https://data.brreg.no/fullmakt/enheter/{org_number}/prokura`).
    - `brreg_subentities`: Official Brønnøysund Underenheter API (`https://data.brreg.no/enhetsregisteret/api/underenheter?overordnetEnhet={org_number}`).
+   - `brreg_group_structure`: Official Brønnøysund Corporate Group Structure API (`https://data.brreg.no/enhetsregisteret/api/konsernstruktur/{org_number}`).
 3. **`facts`**: Granular key-value assertions (`fact_id`, `org_number`, `fact_key`, `fact_value`, `verification_status`, `first_observed_at`, `last_observed_at`, `is_active`). Active facts are indexed via a partial unique index `(org_number, fact_key) WHERE is_active = 1`.
 4. **`evidence`**: Lineage links for facts containing the exact source URL, retrieval timestamp, validity date, and raw JSON payload (`raw_evidence`).
 5. **`change_history`**: Audit log recording `previous_value` -> `new_value`, change timestamp, and change type (`created`, `updated`, `reasserted`, `conflict`).
@@ -300,7 +302,7 @@ conn.close()
 
 ## Running Tests
 
-The test suite runs 100% offline (117 passing unit tests) using mocked HTTP responses and temporary SQLite databases.
+The test suite runs 100% offline (149 passing unit tests) using mocked HTTP responses and temporary SQLite databases.
 
 Run all tests:
 ```bash

@@ -373,8 +373,8 @@ def main(args: Optional[List[str]] = None) -> None:
     parser.add_argument(
         "--sources",
         type=str,
-        default="registry,roles,accounts",
-        help="Comma-separated list of data sources to enable (e.g. 'registry,roles,accounts'). Default: 'registry,roles,accounts'",
+        default="registry,roles,accounts,subentities",
+        help="Comma-separated list of data sources to enable (e.g. 'registry,roles,accounts,subentities'). Default: 'registry,roles,accounts,subentities'",
     )
 
     parsed = parser.parse_args(args)
@@ -390,12 +390,13 @@ def main(args: Optional[List[str]] = None) -> None:
         if parsed.run is not None:
             db_file = parsed.db or "signalpost.db"
             live_refresh = not parsed.no_live
-            sources_list = [s.strip().lower() for s in (parsed.sources or "registry,roles,accounts").split(",") if s.strip()]
+            sources_list = [s.strip().lower() for s in (parsed.sources or "registry,roles,accounts,subentities").split(",") if s.strip()]
             include_roles = "roles" in sources_list
             include_finanstilsynet = "finanstilsynet" in sources_list
             include_accounts = "accounts" in sources_list
             include_fullmakt = "fullmakt" in sources_list
             include_subentities = "subentities" in sources_list
+            include_group = "group" in sources_list
 
             try:
                 org_numbers = load_input_org_numbers(parsed.run)
@@ -415,6 +416,7 @@ def main(args: Optional[List[str]] = None) -> None:
                 include_accounts=include_accounts,
                 include_fullmakt=include_fullmakt,
                 include_subentities=include_subentities,
+                include_group=include_group,
                 client=client,
                 max_requests_limit=parsed.request_budget,
                 input_source_identifier=parsed.run,

@@ -61,13 +61,20 @@ from signal_post.subentities import (
     extract_subentity_facts_and_evidence,
     save_subentity_facts_to_storage,
 )
+from signal_post.group_structure import (
+    BrregGroupClient,
+    GROUP_STRUCTURE_SOURCE_ID,
+    GROUP_STRUCTURE_SOURCE_NAME,
+    extract_group_facts_and_evidence,
+    save_group_facts_to_storage,
+)
 
 
 class CompanyRunner:
     """
     Evaluator-facing batch execution runner for Norwegian company research.
     Processes one or many organization numbers safely with failure isolation,
-    evidence lineage formatting, multi-source enrichment (Enhetsregisteret + Roles + Finanstilsynet + Regnskapsregisteret),
+    evidence lineage formatting, multi-source enrichment (Enhetsregisteret + Roles + Finanstilsynet + Regnskapsregisteret + Underenheter + Group Structure),
     and budget protection.
     """
 
@@ -87,6 +94,7 @@ class CompanyRunner:
         self.accounts_client = RegnskapsClient(client=self.client, session=self.client.session, budget_tracker=self.budget_tracker)
         self.fullmakt_client = BrregFullmaktClient(client=self.client, session=self.client.session, budget_tracker=self.budget_tracker)
         self.subentities_client = BrregSubentitiesClient(client=self.client, session=self.client.session, budget_tracker=self.budget_tracker)
+        self.group_client = BrregGroupClient(client=self.client, session=self.client.session, budget_tracker=self.budget_tracker)
 
     def process_company(
         self,
@@ -97,11 +105,12 @@ class CompanyRunner:
         include_accounts: bool = False,
         include_fullmakt: bool = False,
         include_subentities: bool = False,
+        include_group: bool = False,
     ) -> Dict[str, Any]:
         """
         Process a single organization number through validation, database lookup,
         live refresh (if configured), Roles API enrichment (if configured), Finanstilsynet enrichment (if configured),
-        Regnskapsregisteret enrichment (if configured), Fullmakt enrichment (if configured), Underenheter enrichment (if configured), fact extraction, and evidence formatting.
+        Regnskapsregisteret enrichment (if configured), Fullmakt enrichment (if configured), Underenheter enrichment (if configured), Corporate Group Structure enrichment (if configured), fact extraction, and evidence formatting.
         """
         result: Dict[str, Any] = {
             "org_number": str(raw_org_number).strip(),
@@ -115,6 +124,7 @@ class CompanyRunner:
                 "signatur": "not_attempted" if include_fullmakt else "disabled",
                 "prokura": "not_attempted" if include_fullmakt else "disabled",
                 "subentities": "not_attempted" if include_subentities else "disabled",
+                "group": "not_attempted" if include_group else "disabled",
             },
             "facts": [],
             "source_urls": [],
@@ -471,6 +481,47 @@ class CompanyRunner:
             else:
                 result["source_status"]["subentities"] = "served_from_local"
 
+        # 5f. Corporate Group Structure API Enrichment if requested and live_refresh enabled
+        if include_group:
+            if live_refresh:
+                try:
+                    if not self.budget_tracker.can_make_request():
+                        result["warnings"].append("Request budget exhausted before Corporate Group retrieval. Preserving stored facts if any.")
+                        result["source_status"]["group"] = "budget_exhausted"
+                    else:
+                        grp_res = self.group_client.fetch_group_structure(valid_org)
+                        result["source_status"]["group"] = grp_res.status
+                        if grp_res.is_complete_set:
+                            if grp_res.root_payload:
+                                extracted_grp_facts = extract_group_facts_and_evidence(
+                                    grp_res.root_payload, valid_org, grp_res.source_url, retrieved_at=grp_res.retrieved_at
+                                )
+                                save_group_facts_to_storage(
+                                    self.conn,
+                                    valid_org,
+                                    extracted_grp_facts,
+                                    retrieved_at=grp_res.retrieved_at,
+                                    complete_set=True,
+                                )
+                            elif grp_res.status in ("no_group_returned", "not_found"):
+                                save_group_facts_to_storage(
+                                    self.conn,
+                                    valid_org,
+                                    [],
+                                    retrieved_at=grp_res.retrieved_at,
+                                    complete_set=True,
+                                )
+                        if grp_res.error and grp_res.status not in ("success", "no_group_returned", "not_found"):
+                            result["warnings"].append(f"Corporate Group API retrieval note: {grp_res.error}")
+                except RequestBudgetExceededError:
+                    result["warnings"].append("Request budget exhausted before Corporate Group retrieval. Preserving stored profile.")
+                    result["source_status"]["group"] = "budget_exhausted"
+                except Exception as e:
+                    result["warnings"].append(f"Corporate Group API retrieval failed ({e}). Base profile preserved.")
+                    result["source_status"]["group"] = "failed"
+            else:
+                result["source_status"]["group"] = "served_from_local"
+
         # 6. Retrieve active facts & evidence lineage from DB
         stored_facts = get_facts(self.conn, valid_org, active_only=True)
         formatted_facts: List[Dict[str, Any]] = []
@@ -486,6 +537,7 @@ class CompanyRunner:
             FULLMAKT_SIGNATUR_SOURCE_ID: FULLMAKT_SIGNATUR_SOURCE_NAME,
             FULLMAKT_PROKURA_SOURCE_ID: FULLMAKT_PROKURA_SOURCE_NAME,
             SUBENTITIES_SOURCE_ID: SUBENTITIES_SOURCE_NAME,
+            GROUP_STRUCTURE_SOURCE_ID: GROUP_STRUCTURE_SOURCE_NAME,
         }
 
         for f in stored_facts:
@@ -521,6 +573,7 @@ class CompanyRunner:
         role_fact_count = sum(1 for f in formatted_facts if f["fact_key"].startswith("role_"))
         ft_fact_count = sum(1 for f in formatted_facts if f["fact_key"].startswith("licence_") or f["fact_key"] in ("finanstilsynet_id", "lei_code"))
         acc_fact_count = sum(1 for f in formatted_facts if f["fact_key"].startswith("accounts_"))
+        grp_fact_count = sum(1 for f in formatted_facts if f["fact_key"].startswith("group_") or f["fact_key"] in ("is_in_registered_group", "registered_group_root_org", "registered_group_root_name", "registered_group_node_count"))
         has_conflicts = any(f.get("verification_status") == "conflicting" for f in formatted_facts)
         has_corroborated = any(f.get("verification_status") == "corroborated" for f in formatted_facts)
 
@@ -543,7 +596,10 @@ class CompanyRunner:
         roles_desc = f" ({role_fact_count} role facts)" if role_fact_count > 0 else ""
         ft_desc = f" ({ft_fact_count} regulatory facts)" if ft_fact_count > 0 else ""
         acc_desc = f" ({acc_fact_count} financial facts)" if acc_fact_count > 0 else ""
-        result["summary"] = f"Company '{result['name']}' ({valid_org}): {fact_count} {evidence_desc}{roles_desc}{ft_desc}{acc_desc}. {status_label}"
+        grp_desc = f" ({grp_fact_count} group structure facts)" if grp_fact_count > 0 else ""
+        result["summary"] = f"Company '{result['name']}' ({valid_org}): {fact_count} {evidence_desc}{roles_desc}{ft_desc}{acc_desc}{grp_desc}. {status_label}"
+
+        return result
 
         return result
 
@@ -556,6 +612,7 @@ class CompanyRunner:
         include_accounts: bool = False,
         include_fullmakt: bool = False,
         include_subentities: bool = False,
+        include_group: bool = False,
         db_identifier: str = "signalpost.db",
         input_source_identifier: str = "input_org_numbers",
         output_mode: str = "batch_result",
@@ -571,6 +628,7 @@ class CompanyRunner:
         :param include_accounts: If True, attempts Regnskapsregisteret API enrichment.
         :param include_fullmakt: If True, attempts Fullmakt API enrichment.
         :param include_subentities: If True, attempts Underenheter API enrichment.
+        :param include_group: If True, attempts Corporate Group Structure API enrichment.
         :param db_identifier: Path or identifier of SQLite database file.
         :param input_source_identifier: Path or identifier of input source.
         :param output_mode: Output destination identifier ('file', 'stdout', etc.).
@@ -612,6 +670,12 @@ class CompanyRunner:
         total_subentity_facts = 0
         truncated_subentities_count = 0
 
+        companies_with_group_structure_count = 0
+        companies_without_group_structure_count = 0
+        group_source_failed_count = 0
+        total_group_nodes_discovered = 0
+        total_group_facts = 0
+
         for raw_org in org_numbers:
             try:
                 comp_res = self.process_company(
@@ -622,6 +686,7 @@ class CompanyRunner:
                     include_accounts=include_accounts,
                     include_fullmakt=include_fullmakt,
                     include_subentities=include_subentities,
+                    include_group=include_group,
                 )
             except Exception as e:
                 # Per-company fault isolation
@@ -637,6 +702,7 @@ class CompanyRunner:
                         "signatur": "failed",
                         "prokura": "failed",
                         "subentities": "failed",
+                        "group": "failed",
                     },
                     "facts": [],
                     "source_urls": [],
@@ -736,6 +802,31 @@ class CompanyRunner:
                 if sub_st == "truncated":
                     truncated_subentities_count += 1
 
+                # Corporate Group Structure coverage stats calculation
+                grp_st = src_st.get("group")
+                grp_facts = [
+                    f for f in facts
+                    if f.get("fact_key", "").startswith("group_") or f.get("fact_key") in ("is_in_registered_group", "registered_group_root_org", "registered_group_root_name", "registered_group_node_count")
+                ]
+                grp_c = len(grp_facts)
+                total_group_facts += grp_c
+
+                node_cnt_fact = next((f for f in facts if f.get("fact_key") == "registered_group_node_count"), None)
+                if node_cnt_fact:
+                    try:
+                        discovered_nodes = int(node_cnt_fact.get("value", 0))
+                        total_group_nodes_discovered += discovered_nodes
+                    except Exception:
+                        pass
+
+                in_grp_fact = next((f for f in facts if f.get("fact_key") == "is_in_registered_group"), None)
+                if in_grp_fact and in_grp_fact.get("value") == "true":
+                    companies_with_group_structure_count += 1
+                elif grp_st in ("failed", "budget_exhausted"):
+                    group_source_failed_count += 1
+                else:
+                    companies_without_group_structure_count += 1
+
         elapsed = time.time() - start_time
         end_dt = datetime.now(timezone.utc)
         request_deltas = self.budget_tracker.count_requests_since_id(anchor_id) if self.budget_tracker else {}
@@ -747,6 +838,7 @@ class CompanyRunner:
         signatur_fetch_requests = request_deltas.get("signatur_fetch", 0)
         prokura_fetch_requests = request_deltas.get("prokura_fetch", 0)
         subentities_fetch_requests = request_deltas.get("subentities_fetch", 0)
+        group_structure_fetch_requests = request_deltas.get("group_structure_fetch", 0)
         total_req_count = len(org_numbers)
         avg_time = (elapsed / total_req_count) if total_req_count > 0 else 0.0
 
@@ -758,6 +850,7 @@ class CompanyRunner:
         avg_fin = round(total_financial_facts / companies_with_financial_facts_count, 2) if companies_with_financial_facts_count > 0 else 0.0
         avg_fm = round(total_fullmakt_facts / companies_with_fullmakt_facts_count, 2) if companies_with_fullmakt_facts_count > 0 else 0.0
         avg_sub = round(total_subentity_facts / companies_with_subentities_count, 2) if companies_with_subentities_count > 0 else 0.0
+        avg_grp = round(total_group_facts / companies_with_group_structure_count, 2) if companies_with_group_structure_count > 0 else 0.0
 
         run_metrics = {
             "schema_version": "1.0.0",
@@ -798,6 +891,12 @@ class CompanyRunner:
             "total_subentity_facts": total_subentity_facts,
             "average_subentity_facts_per_company": avg_sub,
             "truncated_subentities_count": truncated_subentities_count,
+            "companies_with_group_structure_count": companies_with_group_structure_count,
+            "companies_without_group_structure_count": companies_without_group_structure_count,
+            "group_source_failed_count": group_source_failed_count,
+            "total_group_nodes_discovered": total_group_nodes_discovered,
+            "total_group_facts": total_group_facts,
+            "average_group_facts_per_company": avg_grp,
             "company_fetch_requests": company_fetch_requests,
             "roles_fetch_requests": roles_fetch_requests,
             "finanstilsynet_fetch_requests": finanstilsynet_fetch_requests,
@@ -805,6 +904,7 @@ class CompanyRunner:
             "signatur_fetch_requests": signatur_fetch_requests,
             "prokura_fetch_requests": prokura_fetch_requests,
             "subentities_fetch_requests": subentities_fetch_requests,
+            "group_structure_fetch_requests": group_structure_fetch_requests,
             "total_outbound_requests": total_requests_made,
             "request_budget_limit": self.budget_tracker.budget_limit if self.budget_tracker else 2000,
             "estimated_external_api_cost": "$0",
@@ -828,6 +928,7 @@ def run_evaluation(
     include_accounts: bool = False,
     include_fullmakt: bool = False,
     include_subentities: bool = False,
+    include_group: bool = False,
     client: Optional[BrregClient] = None,
     budget_tracker: Optional[RequestBudgetTracker] = None,
     max_requests_limit: int = 2000,
@@ -854,6 +955,7 @@ def run_evaluation(
             include_accounts=include_accounts,
             include_fullmakt=include_fullmakt,
             include_subentities=include_subentities,
+            include_group=include_group,
             db_identifier=db_path,
             input_source_identifier=input_source_identifier,
             output_mode=output_mode,

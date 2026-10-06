@@ -330,16 +330,45 @@ The Phase 12 benchmark evaluated the 100 organization numbers with quadruple-sou
 - **PRAGMA foreign_key_check**: **`0 violations`**
 - **Evidence Linkage Rate**: **`100.0%`** (5,074 / 5,074 facts linked to complete evidence lineage)
 - **External API/Model Cost**: **`$0.00`** ($0 API subscription fees & $0 LLM fees)
-- **Default Source Strategy Decision**: Default sources remain `--sources registry,roles,accounts` (300 requests, 71.94s, 4,523 facts). Underenheter is provided as an optional source (`--sources registry,roles,accounts,subentities`) when physical operating locations and branch activity details are needed.
+- **Default Source Strategy Decision**: Default sources promoted to `--sources registry,roles,accounts,subentities` (400 requests, 163.75s, 5,074 facts) to include operating unit discovery out of the box.
 
 ---
 
-## 14. Limitations & Scope
+## 14. Live 100-Company Corporate Group Structure Benchmark (Phase 13)
 
-- **Data Source Scope**: Signalpost integrates official open APIs from Brønnøysund (`Enhetsregisteret`, `Roles API`, `Regnskapsregisteret`, `Fullmakttjenesten`, `Underenheter`) and Finanstilsynet (`Virksomhetsregisteret v2`).
+The Phase 13 benchmark evaluated the 100 organization numbers with quintuple-source enrichment (**Enhetsregisteret + Roles API + Regnskapsregisteret + Underenheter + Corporate Group Structure**):
+
+- **Command Executed**:
+  ```bash
+  python -m signal_post --run benchmark_input_100.json --output coverage_group_results_100.json --db coverage_group_100.db --sources registry,roles,accounts,subentities,group --request-budget 2000
+  ```
+- **Input File**: `benchmark_input_100.json` (SHA-256: `76701d63c3dfa74c5348635927818729de72ff8aa25d7a7ab7f07aa6d4b2df68`)
+- **Output Result File**: `coverage_group_results_100.json` (SHA-256: `ef98b5e6a613e03d1acd68ddf9fba7b43de8d0589b10cfb9d4f10e14c14d337f`)
+- **Database File**: `coverage_group_100.db`
+- **Metadata Provenance File**: `coverage_group_metadata.json`
+- **Requested Companies**: `100`
+- **Successfully Processed**: `100` (`100.0%` success rate)
+- **Outbound HTTP Request Breakdown**: `500` total requests (`100` base + `100` roles + `100` accounts + `100` subentities + `100` group)
+- **Wall-Clock Runtime**: **`121.70 seconds`** (Avg `1.2170s` / company)
+- **Companies Enriched with Corporate Group Structure**: `15 / 100` (`15.0%` of benchmark sample belong to registered corporate groups)
+- **Companies Without Corporate Group**: `85 / 100` (`85.0%` returned HTTP 404 cleanly)
+- **Total Corporate Group Nodes Discovered**: `154` nodes across 15 group trees
+- **Total Group Structure Facts Published**: `199` active relationship & group summary facts (`is_in_registered_group`, `registered_group_root_org`, `group_relation_<parent>_<child>_<code...>`)
+- **Total Combined Active Facts Stored**: `5,273` active facts (`1,907` base + `438` roles + `2,178` accounts + `551` subentities + `199` group)
+- **PRAGMA integrity_check**: **`ok`**
+- **PRAGMA foreign_key_check**: **`0 violations`**
+- **Evidence Linkage Rate**: **`100.0%`** (5,273 / 5,273 facts linked to complete evidence lineage)
+- **External API/Model Cost**: **`$0.00`** ($0 API subscription fees & $0 LLM fees)
+
+---
+
+## 15. Limitations & Scope
+
+- **Data Source Scope**: Signalpost integrates official open APIs from Brønnøysund (`Enhetsregisteret`, `Roles API`, `Regnskapsregisteret`, `Fullmakttjenesten`, `Underenheter`, `Konsernstruktur`) and Finanstilsynet (`Virksomhetsregisteret v2`).
 - **Financial Statement Availability**: Statements are only available for entities required to submit annual accounts to Regnskapsregisteret (e.g. `AS`, `ASA`). Non-reporting entity forms (e.g. sole proprietorships `ENK`) return `success_empty` or `not_found` cleanly.
 - **Authority Rule Machine Coverage**: Signature and procuration machine rules in Fullmakttjenesten are available for supported commercial forms (`AS`, `ENK`, `ANS`, etc.). Unmaintained forms (`ORGL`, `ADM`, etc.) return `unsupported_org_form` without failing.
 - **Operating Unit Boundaries**: Subentity attributes (addresses, employee counts, activities) are strictly child-scoped and are never merged into parent legal entity attributes.
+- **Corporate Group Hierarchy Scope**: Group facts are relationship-scoped (`group_relation_<parent>_<child>_<code...>`), ensuring corporate group relationships never overwrite direct legal entity attributes.
 - **Currency & Scaling**: Signalpost preserves exact source-supplied numeric amounts and currencies (`valuta`) without amount scaling or currency conversion. Statements missing currency metadata are withheld from monetary fact publication.
 - **Duplicate Resubmissions**: Identical duplicate filings are deduplicated; conflicting resubmissions for the same period/scope are withheld from clean publication to prevent published ambiguity.
 - **Synchronous API Execution**: Outbound REST requests execute sequentially per company to maintain strict request budget control.
