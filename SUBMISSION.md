@@ -277,10 +277,39 @@ The Phase 10.2 canonical benchmark evaluated the 100 organization numbers on a f
 
 ---
 
-## 12. Limitations & Scope
+## 12. Live 100-Company Fullmakttjenesten Benchmark (Phase 11)
 
-- **Data Source Scope**: Signalpost integrates official open APIs from Brønnøysund (`Enhetsregisteret`, `Roles API`, `Regnskapsregisteret`) and Finanstilsynet (`Virksomhetsregisteret v2`).
+The Phase 11 benchmark evaluated the 100 organization numbers with quadruple-source enrichment (**Enhetsregisteret + Roles API + Regnskapsregisteret + Fullmakttjenesten**):
+
+- **Command Executed**:
+  ```bash
+  python -m signal_post --run benchmark_input_100.json --output coverage_fullmakt_results_100.json --db coverage_fullmakt_100.db --sources registry,roles,accounts,fullmakt --request-budget 1500
+  ```
+- **Input File**: `benchmark_input_100.json` (SHA-256: `76701d63c3dfa74c5348635927818729de72ff8aa25d7a7ab7f07aa6d4b2df68`)
+- **Output Result File**: `coverage_fullmakt_results_100.json` (SHA-256: `6ee4fff2218cac377c6284bc117936ea335f4ef7fcb18776137428254d3eb559`)
+- **Database File**: `coverage_fullmakt_100.db`
+- **Metadata Provenance File**: `coverage_fullmakt_metadata.json`
+- **Requested Companies**: `100`
+- **Successfully Processed**: `100` (`100.0%` success rate)
+- **Outbound HTTP Request Breakdown**: `500` total requests (`100` base + `100` roles + `100` accounts + `100` signatur + `100` prokura)
+- **Wall-Clock Runtime**: **`159.93 seconds`** (Avg `1.5993s` / company)
+- **Companies Enriched with Authority Rules**: `48 / 100` (`48.0%` of benchmark sample have registered signature or procuration rules)
+- **Total Authority Facts Published**: `73` active facts (`fullmakt_signatur_combination_...` and `fullmakt_prokura_combination_...`)
+- **Total Combined Active Facts Stored**: `4,596` active facts (`1,907` base + `438` roles + `2,178` accounts + `73` fullmakt)
+- **Privacy Compliance**: `100%` (0 birth dates `fodselsdato`, 0 national identity numbers `fnr`, 0 D-numbers exposed)
+- **PRAGMA integrity_check**: **`ok`**
+- **PRAGMA foreign_key_check**: **`0 violations`**
+- **Evidence Linkage Rate**: **`100.0%`** (4,596 / 4,596 facts linked to complete evidence lineage)
+- **External API/Model Cost**: **`$0.00`** ($0 API subscription fees & $0 LLM fees)
+- **Default Source Strategy Decision**: Default sources remain `--sources registry,roles,accounts` (300 requests, 71.94s, 4,523 facts). Fullmakttjenesten is provided as an optional source (`--sources registry,roles,accounts,fullmakt`) when binding authority rules are required.
+
+---
+
+## 13. Limitations & Scope
+
+- **Data Source Scope**: Signalpost integrates official open APIs from Brønnøysund (`Enhetsregisteret`, `Roles API`, `Regnskapsregisteret`, `Fullmakttjenesten`) and Finanstilsynet (`Virksomhetsregisteret v2`).
 - **Financial Statement Availability**: Statements are only available for entities required to submit annual accounts to Regnskapsregisteret (e.g. `AS`, `ASA`). Non-reporting entity forms (e.g. sole proprietorships `ENK`) return `success_empty` or `not_found` cleanly.
+- **Authority Rule Machine Coverage**: Signature and procuration machine rules in Fullmakttjenesten are available for supported commercial forms (`AS`, `ENK`, `ANS`, etc.). Unmaintained forms (`ORGL`, `ADM`, etc.) return `unsupported_org_form` without failing.
 - **Currency & Scaling**: Signalpost preserves exact source-supplied numeric amounts and currencies (`valuta`) without amount scaling or currency conversion. Statements missing currency metadata are withheld from monetary fact publication.
 - **Duplicate Resubmissions**: Identical duplicate filings are deduplicated; conflicting resubmissions for the same period/scope are withheld from clean publication to prevent published ambiguity.
 - **Synchronous API Execution**: Outbound REST requests execute sequentially per company to maintain strict request budget control.

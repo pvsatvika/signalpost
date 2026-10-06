@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0.0",
+  "benchmark_name": "canonical_100_company_live_benchmark",
+  "generated_at_utc": "2026-10-06T15:56:47.109235+00:00",
+  "command_executed": "python -m signal_post.cli --run benchmark_input_100.json --db coverage_fullmakt_100.db --output coverage_fullmakt_results_100.json --sources registry,roles,accounts,fullmakt --request-budget 1500",
+  "input_file": "benchmark_input_100.json",
+  "input_sha256": "76701d63c3dfa74c5348635927818729de72ff8aa25d7a7ab7f07aa6d4b2df68",
+  "output_file": "coverage_fullmakt_results_100.json",
+  "output_sha256": "6ee4fff2218cac377c6284bc117936ea335f4ef7fcb18776137428254d3eb559",
+  "database_file": "coverage_fullmakt_100.db",
+  "org_number_count": 100,
+  "db_integrity_status": "ok",
+  "foreign_key_violations": 0,
+  "measured_runtime_seconds": 159.93,
+  "requests_used": 500,
+  "success_count": 100,
+  "failed_count": 0,
+  "live_refreshed_count": 100,
+  "served_from_local_count": 0,
+  "local_fallback_count": 0,
+  "estimated_external_api_cost": "$0",
+  "git_commit_hash": "62042b580211be282e531663f4f6000e9c417827"
+}

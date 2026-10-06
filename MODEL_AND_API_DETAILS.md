@@ -47,10 +47,18 @@ This document details the architectural specifications, API requirements, model 
 - **Provider**: Brønnøysund Register Centre (*Regnskapsregisteret*).
 - **Endpoint Pattern**: `https://data.brreg.no/regnskapsregisteret/regnskap/{org_number}`
 - **Authentication**: **None** (Public Open Data REST API under NLOD).
-- **Transport**: HTTPS GET returning structured JSON arrays of annual financial statements.
-- **Scope & Whitelist**: Strict whitelist of official source key figures (`salgsinntekter`, `sum_driftsinntekter`, `driftsresultat`, `sum_driftskostnad`, `ordinaert_resultat_foer_skatt`, `aarsresultat`, `sum_eiendeler`, `sum_omloepsmidler`, `sum_anleggsmidler`, `sum_egenkapital`, `sum_gjeld`). Zero derived formulas or calculated ratios. Zero OCR or LLM extraction.
-- **Scaling & Currency Precision**: Signalpost preserves the exact numeric amount returned by Brønnøysund for the statement's source-supplied currency; Signalpost applies no amount scaling and no currency conversion. Currency must be explicitly source supplied; missing currency metadata causes financial facts from that statement to be withheld.
 - **Duplicate & Revision Handling**: Identical duplicate filings for a period/scope are deduplicated deterministically; conflicting duplicate filings for the same period and scope are withheld from clean publication to prevent published ambiguity.
+
+### Fullmakttjenesten Signature Rights & Procuration REST API
+- **Provider**: Brønnøysund Register Centre (*Fullmakttjenesten*).
+- **Endpoint Patterns**:
+  - `https://data.brreg.no/fullmakt/enheter/{org_number}/signatur`
+  - `https://data.brreg.no/fullmakt/enheter/{org_number}/prokura`
+- **Authentication**: **None** (Public Open Data REST API under NLOD). Restrictive Maskinporten endpoints (`/autorisert-api/` or `data.vcert.brreg.no`) are deliberately NOT used.
+- **Transport**: HTTPS GET returning structured JSON authority objects.
+- **Privacy Enforcement**: Strict privacy barrier recursively strips birth dates (`fodselsdato`, `fødselsdato`), national identity numbers (`fnr`, `fodselsnummer`), and D-numbers (`d-number`, `dnummer`) before any fact or evidence is stored in SQLite or raw evidence.
+- **Organization Form Pre-checking**: Uses Enhetsregisteret organization form classification to skip unnecessary HTTP requests for forms that do not maintain machine authority routines (e.g. `ORGL`, `ADM`, `STAT`, `FYLK`, `KOMM`, `PERS`).
+- **Holder-Stable Keys**: Normalized combination and text rule facts keyed deterministically to avoid false changes.
 
 ---
 
