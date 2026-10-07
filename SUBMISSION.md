@@ -10,6 +10,13 @@
 - **Python 3.9+**
 
 ### Installation Command
+
+#### Windows (PowerShell / Command Prompt)
+```powershell
+pip install -r requirements.txt
+```
+
+#### Linux / macOS
 ```bash
 pip install -r requirements.txt
 ```
@@ -20,20 +27,21 @@ pip install -r requirements.txt
 
 Signalpost provides an evaluator-facing runner that processes single or multiple organization numbers, enforces outbound request budgets, isolates per-company errors, and outputs structured JSON.
 
-### Run Command
+### Run Command (General Purpose Competition Default)
 ```bash
-python -m signal_post --run input.json --output results.json --db signalpost.db --request-budget 150
+python -m signal_post --run input.json --output results.json --db signalpost.db --sources registry,roles,accounts,subentities --request-budget 600
 ```
 
 ### Stdin / Stdout Execution
 ```bash
-cat input.json | python -m signal_post --run - --output - --db signalpost.db --request-budget 150
+cat input.json | python -m signal_post --run - --output - --db signalpost.db --sources registry,roles,accounts,subentities --request-budget 600
 ```
 
 ### Options
 - `--run INPUT_FILE` or `-r INPUT_FILE`: Input JSON file containing organization numbers (or `-` for stdin).
 - `--output OUTPUT_FILE` or `-o OUTPUT_FILE`: Output JSON file path (or `-` for stdout).
 - `--db DB_FILE`: Target SQLite database file (default: `signalpost.db`).
+- `--sources SOURCES_LIST`: Comma-separated data sources to enable (default: `registry,roles,accounts,subentities`).
 - `--no-live` / `--offline`: Disable live HTTP requests and serve profiles from local SQLite cache.
 - `--request-budget INT`: Set maximum outbound HTTP request budget (default: `2000`).
 
@@ -71,30 +79,59 @@ The `status` field precisely distinguishes profile resolution behavior:
 ```json
 {
   "run_metrics": {
-    "requested_count": 3,
-    "processed_count": 3,
-    "success_count": 3,
+    "schema_version": "1.0.0",
+    "run_mode": "live",
+    "started_at": "2026-10-07T12:05:02.242847+00:00",
+    "completed_at": "2026-10-07T12:06:35.743084+00:00",
+    "elapsed_seconds": 93.5,
+    "average_seconds_per_company": 0.935,
+    "requested_count": 100,
+    "processed_count": 100,
+    "success_count": 100,
     "failed_count": 0,
     "served_from_local_count": 0,
     "local_fallback_count": 0,
-    "live_refreshed_count": 3,
-    "total_outbound_requests": 3,
-    "elapsed_seconds": 0.85,
-    "average_seconds_per_company": 0.2833,
-    "estimated_external_api_cost": "$0"
+    "live_refreshed_count": 100,
+    "companies_with_roles_count": 99,
+    "total_role_facts": 438,
+    "companies_with_financial_facts_count": 68,
+    "total_financial_facts": 2178,
+    "companies_with_subentities_count": 67,
+    "total_subentities_discovered": 71,
+    "total_subentity_facts": 551,
+    "company_fetch_requests": 100,
+    "roles_fetch_requests": 100,
+    "accounts_fetch_requests": 100,
+    "subentities_fetch_requests": 100,
+    "total_outbound_requests": 400,
+    "request_budget_limit": 600,
+    "estimated_external_api_cost": "$0",
+    "database_identifier": "benchmark_default_final.db",
+    "input_source": "benchmark_input_100.json",
+    "output_mode": "file"
   },
   "results": [
     {
       "org_number": "923609016",
       "name": "EQUINOR ASA",
       "status": "live_refreshed",
+      "source_status": {
+        "enhetsregisteret": "success",
+        "roles": "success",
+        "accounts": "success",
+        "subentities": "success",
+        "signatur": "disabled",
+        "prokura": "disabled",
+        "finanstilsynet": "disabled",
+        "group": "disabled"
+      },
       "facts": [
         {
           "fact_key": "name",
           "value": "EQUINOR ASA",
           "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
           "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
-          "retrieved_at": "2026-10-05T15:30:00+00:00",
+          "retrieved_at": "2026-10-07T12:05:00+00:00",
           "source_validity_date": null,
           "verification_status": "source_asserted"
         }
@@ -103,12 +140,12 @@ The `status` field precisely distinguishes profile resolution behavior:
         "https://data.brreg.no/enhetsregisteret/api/enheter/923609016"
       ],
       "retrieval_dates": [
-        "2026-10-05T15:30:00+00:00"
+        "2026-10-07T12:05:00+00:00"
       ],
       "changes": [],
       "warnings": [],
       "errors": [],
-      "summary": "Company 'EQUINOR ASA' (923609016): 20 active source-supported facts. Refreshed via official registry REST API."
+      "summary": "Company 'EQUINOR ASA' (923609016): 65 active source-supported facts (7 role facts) (32 financial facts) (12 subentity facts). Refreshed via official registry REST API."
     }
   ]
 }
@@ -116,253 +153,129 @@ The `status` field precisely distinguishes profile resolution behavior:
 
 ---
 
-## 4. Database Architecture & Storage Behavior
+## 4. Default vs Optional Sources Strategy
 
-Signalpost uses SQLite with relational tables and strict transaction safety:
-- **`companies`**: Primary records keyed by 9-digit `org_number`.
-- **`facts`**: Granular key-value assertions indexed via a partial unique index `(org_number, fact_key) WHERE is_active = 1`.
-- **`evidence`**: Lineage links containing exact source URLs, retrieval timestamps, validity dates, and raw open-data payloads (`raw_evidence`).
-- **`change_history`**: Audit trail recording `previous_value` -> `new_value`, change timestamps, and change explanations (`created`, `updated`, `reasserted`, `conflict`).
-- **`request_log`**: Outbound HTTP request tracker enforcing daily request budget limits.
+- **Default**: `registry,roles,accounts,subentities` (400 requests / 100 companies, 93.5s runtime, 5,074 active facts). Provides high coverage across entity attributes, board roles, financial key figures, and operating locations out of the box.
+- **Optional**:
+  - `fullmakt`: Adds signature/prokura authority rules (+200 requests / 100 companies).
+  - `group`: Adds corporate group structure hierarchy trees (+100 requests / 100 companies).
+- **Conditional**:
+  - `finanstilsynet`: Financial supervisory authorizations for regulated entities (+100 requests / 100 companies).
 
 ---
 
 ## 5. API, Model & Financial Cost Details
 
-- **Model Usage**: **$0** (Pure Python code performs deterministic extraction, validation, and storage; zero external LLM inference or subscription costs).
-- **Public API**: Brønnøysund Register Centre REST API (`https://data.brreg.no/enhetsregisteret/api/enheter/{org_number}`).
+- **Model Usage**: **$0** (`Signalpost uses no LLM or generative model in the runtime pipeline`).
+- **Public APIs**: Brønnøysund Register Centre REST APIs (`Enhetsregisteret`, `Roles`, `Regnskapsregisteret`, `Fullmakttjenesten`, `Underenheter`, `Konsernstruktur`) and Finanstilsynet (`Virksomhetsregisteret v2`).
 - **Authentication**: None required (Free public open data under NLOD).
-- **Estimated Financial Cost**: **`$0.00`** ($0 external API subscription fees and $0 AI model inference fees).
+- **Estimated Financial Cost**: **`$0.00`** ($0 API subscription fees and $0 AI model inference fees).
 
 ---
 
-## 6. Reproducing the 1,000-Profile Bootstrap
+## 6. Update & Freshness Proof
 
-To reproduce the deterministic 1,000-profile bootstrap from the local bulk dataset (`enheter_alle_test.json.gz`) with **0 network requests**:
-
-1. **Generate Selection Manifest**:
-   ```bash
-   python -m signal_post --generate-manifest --file enheter_alle_test.json.gz --limit 1000
-   ```
-2. **Import Profiles from Manifest (0 HTTP Requests)**:
-   ```bash
-   python -m signal_post --import-manifest data/bootstrap_manifest.json --file enheter_alle_test.json.gz --db signalpost_1000.db
-   ```
-3. **Validate Database Integrity**:
-   ```bash
-   python -m signal_post --validate-db --db signalpost_1000.db --limit 1000
-   ```
+- **Live Retrieval Timestamps**: Every fact stores `first_observed_at` and `last_observed_at` ISO 8601 UTC timestamps.
+- **Source-Specific Evidence**: Evidence records store exact source URLs and raw JSON evidence payloads (`raw_evidence`).
+- **Safe Change Detection**: Same-source changes update values and log `updated` entries in `change_history` without deleting historical lineage.
+- **Prior Values Preserved**: `change_history` preserves `previous_value` -> `new_value` audit records.
+- **Omissions Do Not Delete**: Missing fields in fresh API responses flag facts as omitted but keep active SQLite entries intact.
+- **Source Failures Preserve State**: Network errors or HTTP 500 responses serve cached SQLite profiles without corrupting database state.
+- **Complete-Source Removals**: Complete-source responses deactivate absent facts (`is_active=0`) and log `removed` entries only when source semantics confirm entity removal.
+- **Historical Accounts**: Financial statements for different fiscal periods (e.g. 2023 vs 2024) coexist as period-specific active facts rather than overwriting prior years.
 
 ---
 
-## 7. Running Unit Tests
+## 7. Explanation Quality & Factual Summaries
 
-Run the complete offline test suite (119 passing tests):
+Signalpost generates strictly factual summaries based on empirical source evidence:
+- **Refreshed via official registry REST API**: Issued when live REST API refresh succeeds.
+- **Loaded from local SQLite cache**: Issued when serving stored SQLite profiles in offline mode or fallback.
+- **Concise Fact Counts**: Reports exact active fact counts, role facts, financial facts, subentity facts, and group facts without speculation.
+- **No Speculation Policy**: Signalpost never infers unstated reasons (e.g. never speculates why revenue changed or why a branch closed).
+
+---
+
+## 8. Reproducing & Validating the 1,000-Profile Bootstrap
+
+The hackathon requires at least 1,000 company profiles. Signalpost includes a deterministic 1,000-profile bootstrap from the local bulk open dataset (`enheter_alle_test.json.gz`) with **0 network requests**:
+
+1. **Manifest Audit**: `data/bootstrap_manifest.json` contains exactly 1,000 unique MOD11 organization numbers.
+2. **Export Dataset**: `data/bootstrap_profiles_1000.jsonl` (0.78 MB, 1,000 normalized profile rows).
+3. **Export Metadata**: `data/bootstrap_profiles_1000_metadata.json` (SHA-256 hashes, generation timestamp).
+
+To reproduce or validate:
+```bash
+python -m signal_post --import-manifest data/bootstrap_manifest.json --file enheter_alle_test.json.gz --db signalpost_1000.db
+python -m signal_post --validate-db --db signalpost_1000.db --limit 1000
+```
+
+---
+
+## 9. Final Canonical Live 100-Company Default Benchmark Results
+
+The final canonical default benchmark evaluated 100 organization numbers on a fresh database (**Enhetsregisteret + Roles API + Regnskapsregisteret + Underenheter**):
+
+- **Command Executed**:
+  ```bash
+  python -m signal_post --run benchmark_input_100.json --output benchmark_default_final_results.json --db benchmark_default_final.db --sources registry,roles,accounts,subentities --request-budget 600
+  ```
+- **Input File**: `benchmark_input_100.json` (SHA-256: `76701d63c3dfa74c5348635927818729de72ff8aa25d7a7ab7f07aa6d4b2df68`)
+- **Output Result File**: `benchmark_default_final_results.json` (SHA-256: `03003cd6357ce0932c5794fbf562c5a475f2a7353b36cb690f06f1787969b34b`)
+- **Database File**: `benchmark_default_final.db`
+- **Metadata Provenance File**: `benchmark_default_final_metadata.json`
+- **Requested Companies**: `100`
+- **Successfully Processed**: `100` (`100.0%` success rate)
+- **Identity Matches**: `100 / 100` (`100.0%` match rate)
+- **Outbound HTTP Request Breakdown**: `400` total requests (`100` base + `100` roles + `100` accounts + `100` subentities)
+- **Wall-Clock Runtime**: **`93.50 seconds`** (Avg `0.9350s` / company)
+- **Companies Enriched by Source**:
+  - Registry: `100 / 100` (`100.0%`)
+  - Roles: `99 / 100` (`99.0%`) -> `438` active role facts
+  - Accounts: `68 / 100` (`68.0%`) -> `2,178` active financial facts
+  - Subentities: `67 / 100` (`67.0%`) -> `551` active subentity facts (`71` operating units discovered)
+- **Total Combined Active Facts Stored**: `5,074` active facts (`1,907` base + `438` roles + `2,178` accounts + `551` subentities)
+- **PRAGMA integrity_check**: **`ok`**
+- **PRAGMA foreign_key_check**: **`0 violations`**
+- **Evidence Linkage Rate**: **`100.0%`** (5,074 / 5,074 facts linked to complete evidence lineage)
+- **External API/Model Cost**: **`$0.00`** ($0 API subscription fees & $0 LLM fees)
+
+---
+
+## 10. Live 100-Company Development & Optional Source Benchmarks Summary
+
+| Benchmark Phase | Sources Enabled | Requests Used | Runtime (s) | Active Facts | Key Coverage / Highlights |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Phase 6.2 Baseline** | `registry` | 100 | 26.05s | 1,907 | 100/100 base company profiles |
+| **Phase 7 Roles** | `registry,roles` | 200 | 54.77s | 2,345 | 67/100 enriched with board roles (+438 facts) |
+| **Phase 9 Finanstilsynet** | `registry,roles,finanstilsynet` | 300 | 94.87s | 2,351 | 1/100 general sample matched (+6 regulatory facts) |
+| **Phase 10.2 Accounts** | `registry,roles,accounts` | 300 | 71.94s | 4,523 | 68/100 enriched with annual accounts (+2,178 facts) |
+| **Phase 11 Fullmakt** | `registry,roles,accounts,fullmakt` | 500 | 159.93s | 4,596 | 48/100 enriched with authority rules (+73 facts) |
+| **Phase 12 Subentities** | `registry,roles,accounts,subentities` | 400 | 163.75s | 5,074 | 67/100 enriched with branches (+551 facts) |
+| **Phase 13 Group Structure** *(Dev)* | `registry,roles,accounts,subentities,group` | 500 | 121.70s | 5,273 | 15/100 enriched with corporate groups (+199 facts) |
+| **Phase 14 Final Default** | `registry,roles,accounts,subentities` | 400 | 93.50s | 5,074 | **Canonical Final Competition Default Benchmark** |
+
+---
+
+## 11. Hackathon Resource-Limit Proof
+
+Evaluator Constraints vs Measured Default Benchmark:
+- **Max Time (45 mins / 2,700s)**: Measured **93.50s** (**3.46%** of limit).
+- **Max Requests (2,000 limit)**: Measured **400 requests** (**20.00%** of limit).
+- **Max Spend ($10.00 limit)**: Measured **$0.00** (**0.00%** of limit).
+
+---
+
+## 12. Running Unit Tests
+
+Run all offline unit tests (149 passing tests):
 ```bash
 python -m unittest discover -s tests
 ```
 
 ---
 
-## 8. Canonical Live 100-Company Baseline Benchmark Results (Phase 6.2 Provenance Freeze)
-
-The canonical live baseline benchmark evaluated 100 organization numbers directly against the official Brønnøysund REST API without post-run manual edits:
-
-- **Command Executed**:
-  ```bash
-  python -m signal_post --run benchmark_input_100.json --output benchmark_canonical_results.json --db benchmark_canonical.db --request-budget 150
-  ```
-- **Input File**: `benchmark_input_100.json` (SHA-256: `76701d63c3dfa74c5348635927818729de72ff8aa25d7a7ab7f07aa6d4b2df68`)
-- **Output Result File**: `benchmark_canonical_results.json` (SHA-256: `10a210904cd511c922cdcadb79936064da61c5ebde3a87f82e79c4db4db453e1`)
-- **Database File**: `benchmark_canonical.db`
-- **Metadata Provenance File**: `benchmark_metadata.json`
-- **Requested Companies**: `100`
-- **Successfully Processed**: `100` (`100.0%` success rate)
-- **Identity Matches**: `100 / 100` (`100.0%` match rate)
-- **Run-Level HTTP Request Delta**: `100` (exactly 1 request per company during run)
-- **Wall-Clock Runtime**: **`26.05 seconds`** (Avg `0.2605s` / company)
-- **External API/Model Cost**: **`$0.00`** ($0 API subscription fees & $0 LLM fees)
-- **PRAGMA integrity_check**: **`ok`**
-- **PRAGMA foreign_key_check**: **`0 violations`**
-- **Facts Stored**: `1,907` active facts (Avg `19.07` facts / company; Min: `15`, Max: `25`)
-- **Evidence Linkage Rate**: **`100.0%`** (1,907 / 1,907 facts linked to complete evidence lineage)
-
----
-
-## 9. Live 100-Company Roles API Coverage Expansion Benchmark (Phase 7)
-
-The Phase 7 coverage expansion benchmark evaluated the same 100 organization numbers with dual-source enrichment (**Enhetsregisteret + Roles API**):
-
-- **Command Executed**:
-  ```bash
-  python -m signal_post --run benchmark_input_100.json --output coverage_roles_results_100.json --db coverage_roles_100.db --request-budget 250
-  ```
-- **Input File**: `benchmark_input_100.json` (SHA-256: `76701d63c3dfa74c5348635927818729de72ff8aa25d7a7ab7f07aa6d4b2df68`)
-- **Output Result File**: `coverage_roles_results_100.json` (SHA-256: `e45559698e45cea26a0829145d9e19f4a0e0c9be8403e0b17c45567539f925df`)
-- **Database File**: `coverage_roles_100.db`
-- **Metadata Provenance File**: `coverage_roles_metadata.json`
-- **Requested Companies**: `100`
-- **Successfully Processed**: `100` (`100.0%` success rate)
-- **Identity Matches**: `100 / 100` (`100.0%` match rate)
-- **Outbound HTTP Request Delta**: `200` (exactly 2 requests per company: 1 base + 1 roles)
-- **Wall-Clock Runtime**: **`54.77 seconds`** (Avg `0.5477s` / company)
-- **Companies Enriched with Roles**: `67 / 100` (`67.0%` of benchmark companies have registered role groups)
-- **Total Active Facts Stored**: `2,345` active facts (**+438 new active role facts**, Avg `23.45` facts / company)
-- **Average Role Facts Among Enriched Companies**: `6.54` role facts / company
-- **Privacy Compliance**: `100%` (0 birth dates `fodselsdato` and 0 national identity numbers `fnr` exposed)
-- **PRAGMA integrity_check**: **`ok`**
-- **PRAGMA foreign_key_check**: **`0 violations`**
-- **Evidence Linkage Rate**: **`100.0%`** (2,345 / 2,345 facts linked to complete evidence lineage)
-- **External API/Model Cost**: **`$0.00`** ($0 API subscription fees & $0 LLM fees)
-
----
-
-## 10. Live 100-Company Finanstilsynet Exploratory Benchmark (Phase 9)
-
-The Phase 9 exploratory benchmark evaluated the same 100 organization numbers with triple-source enrichment (**Enhetsregisteret + Roles API + Finanstilsynet Virksomhetsregisteret v2**):
-
-- **Command Executed**:
-  ```bash
-  python -m signal_post --run benchmark_input_100.json --output coverage_finanstilsynet_results_100.json --db coverage_finanstilsynet_100.db --sources registry,roles,finanstilsynet --request-budget 350
-  ```
-- **Input File**: `benchmark_input_100.json` (SHA-256: `76701d63c3dfa74c5348635927818729de72ff8aa25d7a7ab7f07aa6d4b2df68`)
-- **Output Result File**: `coverage_finanstilsynet_results_100.json` (SHA-256: `04bb7aeabff5fa4d3be6d6ef38fb9a8ddbd77fcf50c3f59fa07f43399fcab9ae`)
-- **Database File**: `coverage_finanstilsynet_100.db`
-- **Metadata Provenance File**: `coverage_finanstilsynet_metadata.json`
-- **Requested Companies**: `100`
-- **Successfully Processed**: `100` (`100.0%` success rate)
-- **Outbound HTTP Request Breakdown**: `300` total requests (`100` base + `100` roles + `100` finanstilsynet)
-- **Wall-Clock Runtime**: **`94.87 seconds`** (Avg `0.9487s` / company)
-- **Companies Matched in Finanstilsynet**: `1 / 100` (`1.0%` of general diversified company sample)
-- **Regulatory Facts Added**: `6` active facts (`finanstilsynet_id` + 5 active licences for `810359862 AUTOBJØRN A/S`)
-- **Total Combined Active Facts Stored**: `2,351` active facts
-- **Privacy Compliance**: `100%` (0 birth dates, 0 national identity numbers, 0 residential addresses exposed)
-- **PRAGMA integrity_check**: **`ok`**
-- **PRAGMA foreign_key_check**: **`0 violations`**
-- **Evidence Linkage Rate**: **`100.0%`** (2,351 / 2,351 facts linked to complete evidence lineage)
-- **External API/Model Cost**: **`$0.00`** ($0 API subscription fees & $0 LLM fees)
-
----
-
-## 11. Fresh Canonical 100-Company Financial Benchmark (Phase 10.2)
-
-The Phase 10.2 canonical benchmark evaluated the 100 organization numbers on a fresh database (**Enhetsregisteret + Roles API + Regnskapsregisteret**):
-
-- **Command Executed**:
-  ```bash
-  python -m signal_post --run benchmark_input_100.json --output benchmark_accounts_canonical_results.json --db benchmark_accounts_canonical.db --sources registry,roles,accounts --request-budget 400
-  ```
-- **Input File**: `benchmark_input_100.json` (SHA-256: `76701d63c3dfa74c5348635927818729de72ff8aa25d7a7ab7f07aa6d4b2df68`)
-- **Output Result File**: `benchmark_accounts_canonical_results.json` (SHA-256: `5c395e341dbf28a43f44bbbfd580c47cbf57c40982783d38342b08bd543d0258`)
-- **Database File**: `benchmark_accounts_canonical.db`
-- **Metadata Provenance File**: `benchmark_accounts_canonical_metadata.json`
-- **Requested Companies**: `100`
-- **Successfully Processed**: `100` (`100.0%` success rate)
-- **Outbound HTTP Request Breakdown**: `300` total requests (`100` base + `100` roles + `100` accounts)
-- **Wall-Clock Runtime**: **`71.94 seconds`** (Avg `0.7194s` / company)
-- **Companies Enriched with Financial Key Figures**: `68 / 100` (`68.0%` of benchmark sample have filed accounts)
-- **Missing-Currency Withholds**: `0` (all 68 enriched companies provided explicit `valuta` metadata)
-- **Conflicting Duplicate Withholds**: `0` (0 conflicting duplicate filings found in this sample)
-- **Total Financial Facts Published**: `2,178` active financial facts (Avg `32.03` financial facts / enriched company)
-- **Total Combined Active Facts Stored**: `4,523` active facts (`1,907` base + `438` roles + `2,178` accounts)
-- **Accuracy & Whitelist Enforcement**: `100%` (strictly 11 whitelisted source fields; 0 derived ratios, 0 profit margins, 0 OCR/parsing errors)
-- **Scope & Currency Precision**: `100%` (company `selskap` vs group `konsern` separated; `NOK`/`USD` preserved; zero and negative amounts preserved; exact source numeric amounts preserved without scaling or conversion)
-- **PRAGMA integrity_check**: **`ok`**
-- **PRAGMA foreign_key_check**: **`0 violations`**
-- **Evidence Linkage Rate**: **`100.0%`** (4,523 / 4,523 facts linked to complete evidence lineage)
-- **External API/Model Cost**: **`$0.00`** ($0 API subscription fees & $0 LLM fees)
-- **Default Source Strategy Decision**: Default sources updated to `--sources registry,roles,accounts`.
-
-*(Note: The previous `coverage_accounts_100.db` database file represents a development coverage artifact resulting from an interrupted initial run; `benchmark_accounts_canonical.db` represents the clean submission canonical benchmark).*
-
----
-
-## 12. Live 100-Company Fullmakttjenesten Benchmark (Phase 11)
-
-The Phase 11 benchmark evaluated the 100 organization numbers with quadruple-source enrichment (**Enhetsregisteret + Roles API + Regnskapsregisteret + Fullmakttjenesten**):
-
-- **Command Executed**:
-  ```bash
-  python -m signal_post --run benchmark_input_100.json --output coverage_fullmakt_results_100.json --db coverage_fullmakt_100.db --sources registry,roles,accounts,fullmakt --request-budget 1500
-  ```
-- **Input File**: `benchmark_input_100.json` (SHA-256: `76701d63c3dfa74c5348635927818729de72ff8aa25d7a7ab7f07aa6d4b2df68`)
-- **Output Result File**: `coverage_fullmakt_results_100.json` (SHA-256: `6ee4fff2218cac377c6284bc117936ea335f4ef7fcb18776137428254d3eb559`)
-- **Database File**: `coverage_fullmakt_100.db`
-- **Metadata Provenance File**: `coverage_fullmakt_metadata.json`
-- **Requested Companies**: `100`
-- **Successfully Processed**: `100` (`100.0%` success rate)
-- **Outbound HTTP Request Breakdown**: `500` total requests (`100` base + `100` roles + `100` accounts + `100` signatur + `100` prokura)
-- **Wall-Clock Runtime**: **`159.93 seconds`** (Avg `1.5993s` / company)
-- **Companies Enriched with Authority Rules**: `48 / 100` (`48.0%` of benchmark sample have registered signature or procuration rules)
-- **Total Authority Facts Published**: `73` active facts (`fullmakt_signatur_combination_...` and `fullmakt_prokura_combination_...`)
-- **Total Combined Active Facts Stored**: `4,596` active facts (`1,907` base + `438` roles + `2,178` accounts + `73` fullmakt)
-- **Privacy Compliance**: `100%` (0 birth dates `fodselsdato`, 0 national identity numbers `fnr`, 0 D-numbers exposed)
-- **PRAGMA integrity_check**: **`ok`**
-- **PRAGMA foreign_key_check**: **`0 violations`**
-- **Evidence Linkage Rate**: **`100.0%`** (4,596 / 4,596 facts linked to complete evidence lineage)
-- **External API/Model Cost**: **`$0.00`** ($0 API subscription fees & $0 LLM fees)
-- **Default Source Strategy Decision**: Default sources remain `--sources registry,roles,accounts` (300 requests, 71.94s, 4,523 facts). Fullmakttjenesten is provided as an optional source (`--sources registry,roles,accounts,fullmakt`) when binding authority rules are required.
-
----
-
-## 13. Live 100-Company Underenheter Benchmark (Phase 12)
-
-The Phase 12 benchmark evaluated the 100 organization numbers with quadruple-source enrichment (**Enhetsregisteret + Roles API + Regnskapsregisteret + Underenheter**):
-
-- **Command Executed**:
-  ```bash
-  python -m signal_post --run benchmark_input_100.json --output coverage_subentities_results_100.json --db coverage_subentities_100.db --sources registry,roles,accounts,subentities --request-budget 1500
-  ```
-- **Input File**: `benchmark_input_100.json` (SHA-256: `76701d63c3dfa74c5348635927818729de72ff8aa25d7a7ab7f07aa6d4b2df68`)
-- **Output Result File**: `coverage_subentities_results_100.json` (SHA-256: `e58ae110019b14a12397859e0879a3ae8b9bf0b7c5aa8ff5e819c4ebaa2db8a0`)
-- **Database File**: `coverage_subentities_100.db`
-- **Metadata Provenance File**: `coverage_subentities_metadata.json`
-- **Requested Companies**: `100`
-- **Successfully Processed**: `100` (`100.0%` success rate)
-- **Outbound HTTP Request Breakdown**: `400` total requests (`100` base + `100` roles + `100` accounts + `100` subentities)
-- **Pagination Requests**: `0` additional pagination requests required for this sample (all fetched within single page)
-- **Wall-Clock Runtime**: **`163.75 seconds`** (Avg `1.6375s` / company)
-- **Companies Enriched with Operating Units**: `67 / 100` (`67.0%` of benchmark sample have registered operating units / branches)
-- **Total Operating Units Discovered**: `71` underenheter
-- **Total Subentity Facts Published**: `551` active child-scoped facts (`subentity_<child_org>_location_address`, `subentity_<child_org>_industry`, `subentity_<child_org>_employee_count`, etc.)
-- **Total Combined Active Facts Stored**: `5,074` active facts (`1,907` base + `438` roles + `2,178` accounts + `551` subentities)
-- **PRAGMA integrity_check**: **`ok`**
-- **PRAGMA foreign_key_check**: **`0 violations`**
-- **Evidence Linkage Rate**: **`100.0%`** (5,074 / 5,074 facts linked to complete evidence lineage)
-- **External API/Model Cost**: **`$0.00`** ($0 API subscription fees & $0 LLM fees)
-- **Default Source Strategy Decision**: Default sources promoted to `--sources registry,roles,accounts,subentities` (400 requests, 163.75s, 5,074 facts) to include operating unit discovery out of the box.
-
----
-
-## 14. Live 100-Company Corporate Group Structure Benchmark (Phase 13)
-
-The Phase 13 benchmark evaluated the 100 organization numbers with quintuple-source enrichment (**Enhetsregisteret + Roles API + Regnskapsregisteret + Underenheter + Corporate Group Structure**):
-
-- **Command Executed**:
-  ```bash
-  python -m signal_post --run benchmark_input_100.json --output coverage_group_results_100.json --db coverage_group_100.db --sources registry,roles,accounts,subentities,group --request-budget 2000
-  ```
-- **Input File**: `benchmark_input_100.json` (SHA-256: `76701d63c3dfa74c5348635927818729de72ff8aa25d7a7ab7f07aa6d4b2df68`)
-- **Output Result File**: `coverage_group_results_100.json` (SHA-256: `ef98b5e6a613e03d1acd68ddf9fba7b43de8d0589b10cfb9d4f10e14c14d337f`)
-- **Database File**: `coverage_group_100.db`
-- **Metadata Provenance File**: `coverage_group_metadata.json`
-- **Requested Companies**: `100`
-- **Successfully Processed**: `100` (`100.0%` success rate)
-- **Outbound HTTP Request Breakdown**: `500` total requests (`100` base + `100` roles + `100` accounts + `100` subentities + `100` group)
-- **Wall-Clock Runtime**: **`121.70 seconds`** (Avg `1.2170s` / company)
-- **Companies Enriched with Corporate Group Structure**: `15 / 100` (`15.0%` of benchmark sample belong to registered corporate groups)
-- **Companies Without Corporate Group**: `85 / 100` (`85.0%` returned HTTP 404 cleanly)
-- **Total Corporate Group Nodes Discovered**: `154` nodes across 15 group trees
-- **Total Group Structure Facts Published**: `199` active relationship & group summary facts (`is_in_registered_group`, `registered_group_root_org`, `group_relation_<parent>_<child>_<code...>`)
-- **Total Combined Active Facts Stored**: `5,273` active facts (`1,907` base + `438` roles + `2,178` accounts + `551` subentities + `199` group)
-- **PRAGMA integrity_check**: **`ok`**
-- **PRAGMA foreign_key_check**: **`0 violations`**
-- **Evidence Linkage Rate**: **`100.0%`** (5,273 / 5,273 facts linked to complete evidence lineage)
-- **External API/Model Cost**: **`$0.00`** ($0 API subscription fees & $0 LLM fees)
-
----
-
-## 15. Limitations & Scope
+## 13. Limitations & Scope
 
 - **Data Source Scope**: Signalpost integrates official open APIs from Brønnøysund (`Enhetsregisteret`, `Roles API`, `Regnskapsregisteret`, `Fullmakttjenesten`, `Underenheter`, `Konsernstruktur`) and Finanstilsynet (`Virksomhetsregisteret v2`).
 - **Financial Statement Availability**: Statements are only available for entities required to submit annual accounts to Regnskapsregisteret (e.g. `AS`, `ASA`). Non-reporting entity forms (e.g. sole proprietorships `ENK`) return `success_empty` or `not_found` cleanly.
@@ -372,3 +285,11 @@ The Phase 13 benchmark evaluated the 100 organization numbers with quintuple-sou
 - **Currency & Scaling**: Signalpost preserves exact source-supplied numeric amounts and currencies (`valuta`) without amount scaling or currency conversion. Statements missing currency metadata are withheld from monetary fact publication.
 - **Duplicate Resubmissions**: Identical duplicate filings are deduplicated; conflicting resubmissions for the same period/scope are withheld from clean publication to prevent published ambiguity.
 - **Synchronous API Execution**: Outbound REST requests execute sequentially per company to maintain strict request budget control.
+
+---
+
+## 14. Repository & Submission Information
+
+- **Repository URL**: `https://github.com/pvsatvika/signalpost`
+- **Branch**: `main`
+- **Submission Commit**: `9f62111dfd6b4f84b25ce1d50cdf3960f8756949`

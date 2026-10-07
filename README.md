@@ -4,303 +4,232 @@
 
 ---
 
-## Architecture & Overview
+## 1. What Signalpost Does
 
-Signalpost integrates official public data sources (starting with the **Brønnøysund Register Centre / Enhetsregisteret**) into a normalized company graph with **fact-level evidence storage** and **safe profile refresh workflows** backed by SQLite.
-
-### Key Components
-
-- **`signal_post.client.BrregClient`**: Handles 9-digit organization number validation, HTTP communication, timeout & retry handling, and identity verification.
-- **`signal_post.models.NormalizedCompanyProfile`**: Pydantic schema mapping registry fields into normalized models while retaining original raw JSON evidence.
-- **`signal_post.storage`**: SQLite storage module managing relational tables for companies, sources, individual facts, evidence lineage, change history, collection queue, and request budget log.
-- **`signal_post.refresh`**: Safe company refresh workflow, change detection, and structured change explanation report generator.
-- **`signal_post.discovery`**: Modular company discovery searching Brønnøysund Enhetsregisteret API, validating 9-digit numbers, deduplicating, and queuing candidates into SQLite.
-- **`signal_post.collection`**: Controlled, resumable batch collection workflow executing profile fetching, validation, and SQLite evidence storage.
-- **`signal_post.bulk`**: Memory-efficient streaming bulk open-data importer for Brønnøysund Enhetsregisteret bulk files (`https://data.brreg.no/enhetsregisteret/api/enheter/lastned`), supporting zero-cost local dataset reuse, bounded imports, and conservative live profile protection.
-- **`signal_post.roles`**: Official Brønnøysund Roles API client (`GET https://data.brreg.no/enhetsregisteret/api/enheter/{org_number}/roller`), strict privacy minimization engine (stripping birth dates `fodselsdato` and national identity numbers), role normalization, and SQLite evidence storage (`brreg_roles`).
-- **`signal_post.finanstilsynet`**: Official Finanstilsynet Virksomhetsregisteret API v2 client (`GET https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query={org_number}`), exact 9-digit company matching, privacy minimization, regulatory licence extraction, and SQLite evidence storage (`finanstilsynet_registry`).
-- **`signal_post.accounts`**: Official Brønnøysund Regnskapsregisteret REST API client (`GET https://data.brreg.no/regnskapsregisteret/regnskap/{org_number}`), strict whitelist of approved source key figures (no derived ratios/formulas), company vs group scope separation, period-specific fact key formatting, and SQLite evidence storage (`brreg_accounts_key_figures`).
-- **`signal_post.fullmakt`**: Official public Brønnøysund Fullmakttjenesten API client (`GET https://data.brreg.no/fullmakt/enheter/{org_number}/signatur` and `/prokura`), unauthenticated signature and procuration authority rules, strict privacy barrier (stripping birth dates, national identity numbers, and D-numbers), holder-stable rule/combination normalization, and SQLite evidence storage (`brreg_fullmakt_signatur` and `brreg_fullmakt_prokura`).
-- **`signal_post.subentities`**: Official Brønnøysund Underenheter API client (`GET https://data.brreg.no/enhetsregisteret/api/underenheter?overordnetEnhet={org_number}`), operating unit / branch discovery, strict parent/child identity separation, employee suppression semantics, bounded pagination/truncation safety, and SQLite evidence storage (`brreg_subentities`).
-- **`signal_post.group_structure`**: Official Brønnøysund Corporate Group Structure API client (`GET https://data.brreg.no/enhetsregisteret/api/konsernstruktur/{org_number}`), corporate group hierarchy traversal, root company identification, relationship-scoped facts (`group_relation_<parent>_<child>_<code...>`), cycle protection, bounded max-depth / max-node safety, and SQLite evidence storage (`brreg_group_structure`).
-- **`signal_post.budget`**: Daily outbound HTTP request budget tracker enforcing API request limits ($0 cost, hackathon compliant).
-- **`signal_post.cli`**: CLI supporting fetching, storing, refreshing, discovering, collecting, bulk downloading, bulk importing, resuming queue processing, checking collection status, inspecting active facts & evidence, inspecting change history, configuring data sources (`--sources`), and exporting JSON. Default enabled sources: `registry,roles,accounts,subentities`.
+Signalpost integrates official Norwegian public registries into a normalized company graph backed by SQLite, providing:
+- **100% Deterministic Extraction**: Zero commercial LLM API dependencies, zero paid subscription fees, and $0 runtime cost.
+- **Fact-Level Evidence Lineage**: Every published fact is linked directly to an exact source URL, retrieval timestamp, and raw source JSON payload (`raw_evidence`).
+- **Safe Profile Refresh Workflows**: Chronological change detection with factual explanation reports.
+- **Privacy Minimization**: Automatic stripping of birth dates (`fodselsdato`), national identity numbers (`fnr`), and D-numbers.
+- **Budget Protection**: Local request budget tracker enforcing API limits ($0 cost, hackathon compliant).
 
 ---
 
-## Database Schema & Evidence Architecture
+## 2. Why Signalpost is Safe
 
-Signalpost uses a local SQLite database (`signalpost.db` by default) with 7 core tables:
-
-1. **`companies`**: Primary records keyed by 9-digit `org_number`, tracking `first_seen_at` and `last_checked_at`.
-2. **`sources`**: Registered public data sources:
-   - `brreg_enhetsregisteret`: Official Brønnøysund Enhetsregisteret REST API.
-   - `brreg_bulk_enhetsregisteret`: Official Brønnøysund Enhetsregisteret Bulk Open Data dataset (`https://data.brreg.no/enhetsregisteret/api/enheter/lastned`).
-   - `brreg_roles`: Official Brønnøysund Roles Open API (`https://data.brreg.no/enhetsregisteret/api/enheter/{org_number}/roller`).
-   - `finanstilsynet_registry`: Official Finanstilsynet Virksomhetsregisteret Open API (`https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query={org_number}`).
-   - `brreg_accounts_key_figures`: Official Brønnøysund Regnskapsregisteret Open API (`https://data.brreg.no/regnskapsregisteret/regnskap/{org_number}`).
-   - `brreg_fullmakt_signatur`: Official Brønnøysund Fullmakttjenesten Signature Rights API (`https://data.brreg.no/fullmakt/enheter/{org_number}/signatur`).
-   - `brreg_fullmakt_prokura`: Official Brønnøysund Fullmakttjenesten Procuration Rights API (`https://data.brreg.no/fullmakt/enheter/{org_number}/prokura`).
-   - `brreg_subentities`: Official Brønnøysund Underenheter API (`https://data.brreg.no/enhetsregisteret/api/underenheter?overordnetEnhet={org_number}`).
-   - `brreg_group_structure`: Official Brønnøysund Corporate Group Structure API (`https://data.brreg.no/enhetsregisteret/api/konsernstruktur/{org_number}`).
-3. **`facts`**: Granular key-value assertions (`fact_id`, `org_number`, `fact_key`, `fact_value`, `verification_status`, `first_observed_at`, `last_observed_at`, `is_active`). Active facts are indexed via a partial unique index `(org_number, fact_key) WHERE is_active = 1`.
-4. **`evidence`**: Lineage links for facts containing the exact source URL, retrieval timestamp, validity date, and raw JSON payload (`raw_evidence`).
-5. **`change_history`**: Audit log recording `previous_value` -> `new_value`, change timestamp, and change type (`created`, `updated`, `reasserted`, `conflict`).
-6. **`collection_queue`**: Discovery queue managing organization numbers (`org_number`, `name`, `organization_form_code`, `registration_date`, `discovered_at`, `discovery_source`, `status`, `attempt_count`, `last_attempt_at`, `error_message`).
-7. **`request_log`**: Daily outbound HTTP request tracker recording request types, target URLs, and timestamps.
-
-### Verification Status Lifecycle
-
-- **`source_asserted`**: Fact is asserted by a single data source.
-- **`corroborated`**: Fact is confirmed by multiple independent data sources asserting the exact same value.
-- **`conflicting`**: Different data sources assert conflicting values for the same fact key. The conflict is recorded in evidence and logged in `change_history` without silently overwriting existing data.
+1. **Identity & Format Verification**: Validates 9-digit Norwegian organization numbers via MOD11 algorithm before network requests or database transactions occur.
+2. **No Hallucinations**: All assertions originate directly from official government REST APIs or official bulk open datasets.
+3. **No Accidental Deletions**: Omitted fields in new registry responses are flagged as omitted but remain stored in SQLite to prevent data loss.
+4. **Historical Financial Protection**: Financial statements preserve exact source numeric amounts and currency codes (`valuta`). Statements missing currency metadata or containing conflicting duplicate filings are withheld from monetary fact publication.
+5. **Operating Unit & Group Boundaries**: Subentities (`underenheter`) and corporate group relations (`konsernstruktur`) are stored as relationship-scoped facts and are **never merged into parent legal entity attributes**.
 
 ---
 
-## Setup & Installation
+## 3. Quick Start
 
 ### Requirements
+- **Python 3.9+**
 
-- Python 3.9+
+### Installation
 
-### Environment Setup
+#### Windows (PowerShell / Command Prompt)
+```powershell
+pip install -r requirements.txt
+```
 
-1. Navigate to the project root directory:
-   ```bash
-   cd signal-post
-   ```
-
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-
----
-
-## Running the Application
-
-### Evaluator Batch Runner (One-Command Execution)
-
-Process one or more organization numbers, enforce outbound request budget, and generate structured report JSON:
-
+#### Linux / macOS
 ```bash
-python -m signal_post --run input.json --output results.json --db signalpost.db --request-budget 150
-```
-
-### Fetch & Display Company Profile (Human Summary)
-
-```bash
-python -m signal_post 974760673
-```
-
-### Fetch, Normalize & Store to SQLite
-
-Fetch live company data from Brønnøysund, normalize the response, store individual facts, and record evidence into SQLite:
-
-```bash
-python -m signal_post 974760673 --db signalpost.db --store
-```
-
-### Safely Refresh Profile & Generate Change Report
-
-Fetch latest data, detect changes against stored facts, commit valid updates, and print structured change explanations:
-
-```bash
-python -m signal_post 974760673 --db signalpost.db --refresh
-```
-
-*Example Refresh Output (When Changes Detected):*
-```text
-======================================================================
- COMPANY PROFILE REFRESH REPORT: EQUINOR ASA
-======================================================================
- Organization Number : 923609016
- Status              : SUCCESS
- Retrieval Time      : 2026-10-04T12:00:00Z
- Source              : Brønnøysundregistrene - Enhetsregisteret (brreg_enhetsregisteret)
- Exact Source URL    : https://data.brreg.no/enhetsregisteret/api/enheter/923609016
- Summary Counts      : updated=1, unchanged=21
-----------------------------------------------------------------------
- Detected Fact Changes & Explanations:
-
-  [UPDATED]    Fact: num_employees
-    Explanation: Fact 'num_employees' changed from '21272' to '21500' according to the latest record from 'Brønnøysundregistrene - Enhetsregisteret'.
-    Previous   : 21272
-    New Value  : 21500
-======================================================================
-```
-
-*Example Refresh Output (When Unchanged):*
-```text
-======================================================================
- COMPANY PROFILE REFRESH REPORT: REGISTERENHETEN I BRØNNØYSUND
-======================================================================
- Organization Number : 974760673
- Status              : SUCCESS
- Retrieval Time      : 2026-10-04T12:00:00Z
- Source              : Brønnøysundregistrene - Enhetsregisteret (brreg_enhetsregisteret)
- Exact Source URL    : https://data.brreg.no/enhetsregisteret/api/enheter/974760673
- Summary Counts      : unchanged=22
-----------------------------------------------------------------------
- Result: No profile changes detected. All active facts remain unchanged.
-======================================================================
-```
-
-### Export Refresh Report as JSON
-
-```bash
-python -m signal_post 974760673 --db signalpost.db --refresh --json
-```
-
-### Inspect Stored Facts & Evidence Lineage
-
-```bash
-python -m signal_post 974760673 --db signalpost.db --inspect-facts
-```
-
-### Inspect Change History Audit Log
-
-```bash
-python -m signal_post 974760673 --db signalpost.db --inspect-history
-```
-
-### Discover Companies from Brønnøysund API
-
-Search the official Brønnøysund search endpoint, validate organization numbers, deduplicate, and queue candidates:
-
-```bash
-python -m signal_post --discover --limit 50 --filter-org-form AS --db signalpost.db
-```
-
-### Process Queued Profiles (Batch Collection)
-
-Collect profiles for queued organization numbers using the safe refresh workflow and request budget tracking:
-
-```bash
-python -m signal_post --collect --limit 10 --request-budget 50 --db signalpost.db
-```
-
-### Resume Failed or Interrupted Collection
-
-Resume processing pending or previously failed queue items:
-
-```bash
-python -m signal_post --resume --limit 20 --db signalpost.db
-```
-
-### Inspect Collection & Queue Status Summary
-
-Print real-time queue breakdown, stored profile count, and today's outbound request budget:
-
-```bash
-python -m signal_post --status --db signalpost.db
-```
-
-### Download Official Bulk Open Data Dataset
-
-Download the official Brønnøysund bulk dataset file (`https://data.brreg.no/enhetsregisteret/api/enheter/lastned`) with HTTP request budget tracking:
-
-```bash
-python -m signal_post --bulk-download --file enheter_alle.json.gz --db signalpost.db
-```
-
-### Import Profiles from Local Bulk File
-
-Stream and import profiles from a previously downloaded local bulk file with zero additional HTTP requests:
-
-```bash
-python -m signal_post --bulk-import enheter_alle.json.gz --limit 100 --filter-org-form AS --db signalpost.db
+pip install -r requirements.txt
 ```
 
 ---
 
-## Open Data License
+## 4. One-Command Evaluator Execution
 
-The bulk open data datasets provided by the Brønnøysund Register Centre (Enhetsregisteret) are distributed under the **Norwegian Licence for Open Government Data (NLOD)** (*Norsk lisens for åpne offentlige data*).
+Process organization numbers safely through validation, multi-source enrichment, evidence formatting, and budget tracking:
 
-Signalpost complies fully with NLOD requirements:
-- Source attribution (`source_id='brreg_bulk_enhetsregisteret'`).
-- Exact retrieval timestamps and source URL metadata stored for every evidence record.
-- Unaltered retention of raw open-data payloads in SQLite (`raw_evidence`).
+```bash
+python -m signal_post --run input.json --output results.json --db signalpost.db --request-budget 600
+```
 
----
-
-## Bounded Bulk Importer & 1,000-Profile Bootstrap (Phase 5.1)
-
-Signalpost includes a reproducible bulk selection and import engine for scaling company coverage without consuming API budget:
-
-1. **Deterministic Selection Strategy**:
-   - **Pass 1 Analysis**: Scans local bulk dataset (`enheter_alle_test.json.gz`) to count active organization forms (`ENK`, `AS`, `FLI`, `ESEK`, `UTLA`, `NUF`, `DA`, etc.).
-   - **Quota Allocation**: Allocates representation proportionally across all organization forms with a minimum base allocation per form.
-   - **Pass 2 Selection**: Streams dataset to select candidate organization numbers matching form quotas deterministically.
-
-2. **Selection Manifest (`data/bootstrap_manifest.json`)**:
-   - Machine-readable manifest storing:
-     - `generated_at`: ISO timestamp of manifest creation.
-     - `source_file`: Path to bulk file.
-     - `requested_count` / `actual_count`: Target profile counts (1,000).
-     - `org_form_distribution`: Breakdown across organization form codes.
-     - `selected_org_numbers`: Ordered array of selected 9-digit organization numbers.
-
-3. **Commands**:
-   - **Generate Selection Manifest**:
-     ```bash
-     python -m signal_post --generate-manifest --file enheter_alle_test.json.gz --limit 1000
-     ```
-   - **Import Profiles from Manifest (0 HTTP Requests)**:
-     ```bash
-     python -m signal_post --import-manifest data/bootstrap_manifest.json --file enheter_alle_test.json.gz --db signalpost_1000.db
-     ```
-   - **Validate Database Integrity**:
-     ```bash
-     python -m signal_post --validate-db --db signalpost_1000.db --limit 1000
-     ```
-
-4. **Database Integrity Report (`signalpost_1000.db`)**:
-   - `PRAGMA integrity_check`: `ok` (PASSED)
-   - Foreign Key Violations: `0` (PASSED)
-   - Total Stored Companies: `1,000` (100% match)
-   - Total Active Facts: `17,725`
-   - Total Evidence Rows: `17,725` (100.0% evidence linkage rate)
-   - Facts per Company: Min `14`, Avg `17.73`, Max `26`
-
----
-
-## Safe Refresh & Change Detection Mechanics
-
-1. **Identity & Format Verification**: Validates organization number format and verifies returned `organisasjonsnummer` matches the requested number before any DB transactions occur.
-2. **Protection Against False Changes**:
-   - **Missing Fields**: Omitted fields in new responses are flagged as `omitted` in change reports but are **never deleted or deactivated in SQLite**. Existing active facts remain stored.
-   - **Unchanged Values**: Unchanged values update observation timestamps and append evidence, but do **not** generate duplicate change-history entries.
-   - **Chronological Same-Source Updates**: Value changes from the same source deactivate old facts, activate new facts, and record `updated` entries with old/new values and factual explanations.
-   - **Multi-Source Conflicts**: Conflicting values from a different source are flagged as `conflicting` without overwriting the existing stored fact.
-3. **Failed Refreshes**: HTTP timeouts, connection errors, or identity mismatches fail the refresh gracefully without modifying existing database state.
-
----
-
-## Python API Usage
-
-```python
-from signal_post import BrregClient, get_connection, init_db, refresh_company
-
-conn = get_connection("signalpost.db")
-init_db(conn)
-
-# Safely refresh profile and receive structured change report
-result = refresh_company(conn, "923609016")
-
-print(f"Refresh Status: {result.status}")
-print(f"Summary: {result.summary_counts}")
-for change in result.changes:
-    if change.change_type != "unchanged":
-        print(f"Change ({change.change_type}): {change.explanation}")
-
-conn.close()
+### Stdin / Stdout Execution
+```bash
+cat input.json | python -m signal_post --run - --output - --db signalpost.db --request-budget 600
 ```
 
 ---
 
-## Running Tests
+## 5. Example Input
+
+Accepts a JSON array of 9-digit Norwegian organization numbers (`input.json`):
+
+```json
+[
+  "923609016",
+  "974760673",
+  "810034882"
+]
+```
+
+Or a JSON object:
+```json
+{
+  "org_numbers": [
+    "923609016",
+    "974760673"
+  ]
+}
+```
+
+---
+
+## 6. Example Output
+
+The runner outputs evaluator-ready structured JSON with execution metrics and company facts (`results.json`):
+
+```json
+{
+  "run_metrics": {
+    "schema_version": "1.0.0",
+    "run_mode": "live",
+    "elapsed_seconds": 0.935,
+    "average_seconds_per_company": 0.935,
+    "requested_count": 1,
+    "processed_count": 1,
+    "success_count": 1,
+    "failed_count": 0,
+    "served_from_local_count": 0,
+    "local_fallback_count": 0,
+    "live_refreshed_count": 1,
+    "total_outbound_requests": 4,
+    "estimated_external_api_cost": "$0"
+  },
+  "results": [
+    {
+      "org_number": "923609016",
+      "name": "EQUINOR ASA",
+      "status": "live_refreshed",
+      "source_status": {
+        "enhetsregisteret": "success",
+        "roles": "success",
+        "accounts": "success",
+        "subentities": "success",
+        "signatur": "disabled",
+        "prokura": "disabled",
+        "finanstilsynet": "disabled",
+        "group": "disabled"
+      },
+      "facts": [
+        {
+          "fact_key": "name",
+          "value": "EQUINOR ASA",
+          "source_name": "Brønnøysund Register Centre - Enhetsregisteret",
+          "source_url": "https://data.brreg.no/enhetsregisteret/api/enheter/923609016",
+          "retrieved_at": "2026-10-07T12:05:00+00:00",
+          "source_validity_date": null,
+          "verification_status": "source_asserted"
+        }
+      ],
+      "source_urls": [
+        "https://data.brreg.no/enhetsregisteret/api/enheter/923609016"
+      ],
+      "retrieval_dates": [
+        "2026-10-07T12:05:00+00:00"
+      ],
+      "changes": [],
+      "warnings": [],
+      "errors": [],
+      "summary": "Company 'EQUINOR ASA' (923609016): 65 active source-supported facts (7 role facts) (32 financial facts) (12 subentity facts). Refreshed via official registry REST API."
+    }
+  ]
+}
+```
+
+---
+
+## 7. Integrated Public Data Sources
+
+### Default Sources (`--sources registry,roles,accounts,subentities`)
+1. **Brønnøysund Enhetsregisteret**: Official company registry (`GET https://data.brreg.no/enhetsregisteret/api/enheter/{org_number}`).
+2. **Brønnøysund Roles API**: Official board and leadership roles (`GET https://data.brreg.no/enhetsregisteret/api/enheter/{org_number}/roller`). Strips birth dates and national identity numbers.
+3. **Brønnøysund Regnskapsregisteret**: Official annual accounts key figures (`GET https://data.brreg.no/regnskapsregisteret/regnskap/{org_number}`). Strictly 11 whitelisted source key figures.
+4. **Brønnøysund Underenheter API**: Official operating units and branches (`GET https://data.brreg.no/enhetsregisteret/api/underenheter?overordnetEnhet={org_number}`). Strictly child-scoped.
+
+### Optional / Conditional Sources
+5. **Brønnøysund Fullmakttjenesten**: Official signature (`/signatur`) and procuration (`/prokura`) authority rules. Optional (`--sources ...,fullmakt`).
+6. **Brønnøysund Corporate Group Structure**: Official corporate group hierarchy trees (`GET https://data.brreg.no/enhetsregisteret/api/konsernstruktur/{org_number}`). Optional (`--sources ...,group`).
+7. **Finanstilsynet Virksomhetsregisteret v2**: Financial supervisory authorizations (`GET https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query={org_number}`). Optional/conditional (`--sources ...,finanstilsynet`).
+
+---
+
+## 8. Evidence Model
+
+Signalpost uses SQLite (`signalpost.db` by default) with relational tables:
+1. **`companies`**: Primary company records keyed by 9-digit `org_number`.
+2. **`sources`**: Registered public data sources.
+3. **`facts`**: Granular key-value assertions indexed via a partial unique index `(org_number, fact_key) WHERE is_active = 1`.
+4. **`evidence`**: Lineage links containing exact source URLs, retrieval timestamps, validity dates, and raw open-data payloads (`raw_evidence`).
+5. **`change_history`**: Audit log recording `previous_value` -> `new_value`, change timestamps, and change explanations (`created`, `updated`, `reasserted`, `conflict`, `removed`).
+6. **`collection_queue`**: Discovery and collection queue.
+7. **`request_log`**: Daily outbound HTTP request tracker enforcing request limits.
+
+---
+
+## 9. Update & Change Detection Model
+
+- **Live Timestamps**: Every fact stores `first_observed_at` and `last_observed_at` ISO 8601 UTC timestamps.
+- **Source Lineage**: Evidence rows link facts directly to official government endpoints.
+- **Chronological Same-Source Updates**: Same-source value changes deactivate old facts, activate new facts, and record `updated` audit entries.
+- **Multi-Source Conflicts**: Conflicting values from different sources are flagged as `conflicting` without silently overwriting existing data.
+- **Omission Safety**: Missing fields in new API responses flag facts as omitted but keep active SQLite entries intact.
+- **Historical Accounts Protection**: Financial statements for different fiscal periods (e.g. 2023 vs 2024) coexist as period-specific active facts rather than overwriting prior years.
+
+---
+
+## 10. Default vs Optional Sources Rationale
+
+| Source | Coverage ROI | Request Cost | Decision |
+| :--- | :--- | :--- | :--- |
+| **Registry** | 100/100 enriched, +1,907 facts | 1 request/company | **Default** |
+| **Roles** | 67/100 enriched, +438 facts | 1 request/company | **Default** |
+| **Accounts** | 68/100 enriched, +2,178 financial facts | 1 request/company | **Default** |
+| **Subentities** | 67/100 enriched, +551 operating unit facts | 1 request/company | **Default** |
+| **Fullmakt** | 48/100 enriched, +73 authority facts | 2 requests/company | **Optional** (`--sources ...,fullmakt`) |
+| **Group** | 15/100 enriched, +199 hierarchy facts | 1 request/company | **Optional** (`--sources ...,group`) |
+| **Finanstilsynet** | 1/100 general sample enriched, +6 facts | 1 request/company | **Conditional** (`--sources ...,finanstilsynet`) |
+
+---
+
+## 11. 1,000-Profile Bootstrap
+
+Signalpost includes a deterministic 1,000-profile bootstrap mechanism operating locally with **0 network requests**:
+1. **Manifest**: `data/bootstrap_manifest.json` (1,000 unique valid MOD11 org numbers).
+2. **Export Dataset**: `data/bootstrap_profiles_1000.jsonl` (0.78 MB, 1,000 normalized JSONL profile rows).
+3. **Export Metadata**: `data/bootstrap_profiles_1000_metadata.json` (SHA-256 hashes, record count, generation timestamp).
+
+To reproduce or validate:
+```bash
+python -m signal_post --generate-manifest --file enheter_alle_test.json.gz --limit 1000
+python -m signal_post --import-manifest data/bootstrap_manifest.json --file enheter_alle_test.json.gz --db signalpost_1000.db
+python -m signal_post --validate-db --db signalpost_1000.db --limit 1000
+```
+
+---
+
+## 12. Benchmarks
+
+### Canonical Final Default Benchmark (`benchmark_default_final.db`, `benchmark_default_final_results.json`)
+- **Command**: `python -m signal_post --run benchmark_input_100.json --output benchmark_default_final_results.json --db benchmark_default_final.db --sources registry,roles,accounts,subentities --request-budget 600`
+- **Requested / Processed**: 100 / 100 (`100%` success rate)
+- **Outbound HTTP Requests**: 400 total requests (100 base + 100 roles + 100 accounts + 100 subentities)
+- **Wall-Clock Runtime**: **`93.50 seconds`** (0.935s / company)
+- **Total Active Facts Stored**: **`5,074` active facts** (100% evidence linkage rate)
+- **SQLite Integrity**: `PRAGMA integrity_check = ok` (0 foreign key violations)
+- **External API/Model Cost**: **`$0.00`**
+
+---
+
+## 13. Running Tests
 
 The test suite runs 100% offline (149 passing unit tests) using mocked HTTP responses and temporary SQLite databases.
 
@@ -311,8 +240,36 @@ python -m unittest discover -s tests
 
 ---
 
-## Known Limitations
+## 14. Cost Analysis
 
-- **Source Scope**: Integrated with official Brønnøysund `Enhetsregisteret`, `Roles API`, `Regnskapsregisteret`, and Finanstilsynet `Virksomhetsregisteret v2`.
-- **Synchronous Execution**: Operations process individual organization numbers synchronously to ensure strict request budget compliance.
+| Component | Cost |
+| :--- | :--- |
+| **Brønnøysund Public REST APIs** | `$0.00` (Free public Open Data under NLOD) |
+| **Finanstilsynet Registry API v2** | `$0.00` (Free public Open API) |
+| **Local SQLite Database** | `$0.00` (Local embedded database) |
+| **LLM / Model Fees** | `$0.00` (Zero commercial LLM API fees or subscriptions) |
+| **Total Runtime Spend** | **`$0.00`** |
 
+---
+
+## 15. Resource Limits Compliance
+
+Evaluator Constraints vs Measured Default Benchmark:
+- **Max Time (45 mins / 2,700s)**: Measured **93.50s** (**3.46%** of limit).
+- **Max Requests (2,000 limit)**: Measured **400 requests** (**20.00%** of limit).
+- **Max Spend ($10.00 limit)**: Measured **$0.00** (**0.00%** of limit).
+
+---
+
+## 16. Licence & Attribution
+
+- **Source Attribution**: Contains data from official public registers maintained by the Brønnøysund Register Centre (*Brønnøysundregistrene*) and Financial Supervisory Authority of Norway (*Finanstilsynet*), made available under the Norwegian Licence for Open Government Data (NLOD).
+- **Licence**: Open-Source (MIT Licence).
+
+---
+
+## 17. Repository & Submission Information
+
+- **Repository URL**: `https://github.com/pvsatvika/signalpost`
+- **Branch**: `main`
+- **Submission Commit**: `9f62111dfd6b4f84b25ce1d50cdf3960f8756949`

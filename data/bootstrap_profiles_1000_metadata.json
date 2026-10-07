@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0.0",
+  "dataset_name": "signalpost_bootstrap_profiles_1000",
+  "record_count": 1000,
+  "file_path": "bootstrap_profiles_1000.jsonl",
+  "file_size_bytes": 822050,
+  "file_size_mb": 0.78,
+  "jsonl_sha256": "be8ce0528734918707687d5a7cef8ea74f3ba81f1a92b014d79e180ea99f9a2b",
+  "manifest_sha256": "f929e9b5f45f71f2226531c51aa020513cc859cb11a3673d0733af42ff3b348b",
+  "source_snapshot": "https://data.brreg.no/enhetsregisteret/api/enheter/lastned",
+  "generated_at_utc": "2026-10-07T12:10:31.959462+00:00",
+  "generation_command": "python scratch/build_export_1000.py"
+}

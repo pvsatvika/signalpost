@@ -7,102 +7,97 @@ This document details the architectural specifications, API requirements, model 
 ## 1. Core Pipeline Architecture & Model Requirements
 
 - **Model Requirement**: **No paid LLM or commercial AI API is required** for Signalpost's core extraction, normalization, storage, change detection, discovery, collection, or verification pipeline.
-- **Deterministic Processing Engine**: Pure Python code performs deterministic registry schema parsing, 9-digit Norwegian organization number format validation, Pydantic type coercion, relational database transaction management, and lineage tracking.
-- **Future AI Integration**: The system is designed to allow optional local or open-weights LLMs to be attached for downstream natural-language analysis without altering the underlying SQLite evidence graph.
+- **Runtime Statement**: `Signalpost uses no LLM or generative model in the runtime pipeline.`
+- **Deterministic Processing Engine**: Pure Python code performs deterministic registry schema parsing, 9-digit Norwegian organization number format validation via MOD11 algorithm, Pydantic type coercion, relational database transaction management, and lineage tracking.
+- **Development Tools**: Antigravity agent tools used during development are not part of runtime.
 
 ---
 
 ## 2. External Data Sources & Public APIs
 
-### Primary Registry REST API
+### Primary Registry REST API (Default Source: `registry`)
 - **Provider**: Brønnøysund Register Centre (*Brønnøysundregistrene / Enhetsregisteret*).
 - **Endpoint Pattern**: `https://data.brreg.no/enhetsregisteret/api/enheter/{org_number}`
-- **Authentication**: **None** (Public Open Data REST API).
+- **Authentication**: **None** (Public Open Data REST API under NLOD).
 - **Transport**: HTTPS GET returning JSON payloads.
-- **Rate Limit / Budget Control**: Built-in daily request budget tracker enforcing conservative limits (hackathon daily limit: 2,000 requests; Signalpost default: 100–150 requests per evaluation run).
+- **Budget Control**: Logged under `company_fetch` request type.
 
 ### Bulk Open Data Dataset
 - **Provider**: Brønnøysund Register Centre Enhetsregisteret Open Data.
 - **Download Endpoint**: `https://data.brreg.no/enhetsregisteret/api/enheter/lastned`
-- **Licence**: **Norwegian Licence for Open Government Data (NLOD)** (*Norsk lisens for åpne offentlige data*).
-- **Local Reuse**: Signalpost streams compressed bulk open data files (`enheter_alle.json.gz`) locally with memory-bounded streaming (O(1) RAM usage), requiring **0 HTTP requests** for local bootstrap selection and mass importing.
+- **Licence**: Norwegian Licence for Open Government Data (NLOD).
+- **Local Reuse**: Signalpost streams compressed bulk open data files (`enheter_alle_test.json.gz`) locally with O(1) RAM usage, requiring **0 HTTP requests** for local bootstrap selection and mass importing.
 
-### Roles Open Data REST API
+### Roles Open Data REST API (Default Source: `roles`)
 - **Provider**: Brønnøysund Register Centre (*Brønnøysundregistrene / Enhetsregisteret*).
 - **Endpoint Pattern**: `https://data.brreg.no/enhetsregisteret/api/enheter/{org_number}/roller`
 - **Authentication**: **None** (Public Open Data REST API under NLOD).
-- **Transport**: HTTPS GET returning JSON payloads.
 - **Privacy Enforcement**: Strips birth dates (`fodselsdato`) and national identity numbers (`fnr`) before facts or evidence are normalized or stored.
-- **Holder-Stable Keys**: Hashes holder identity to avoid false changes when board members leave or change ordering.
+- **Budget Control**: Logged under `roles_fetch` request type.
 
-### Finanstilsynet Virksomhetsregisteret API v2
-- **Provider**: Financial Supervisory Authority of Norway (*Finanstilsynet*).
-- **Endpoint Pattern**: `https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query={org_number}`
-- **Authentication**: **None** (Public Open Data REST API).
-- **Transport**: HTTPS GET returning OpenAPI 3.0 JSON payloads.
-- **Scope & Privacy**: Exact 9-digit company matching (`legalEntityType != 'Person'`). Excludes residential addresses, birth dates, and personal identification numbers.
-- **Licence Facts**: Extracts Finanstilsynet ID, LEI code, and regulatory licences/authorisations.
-
-### Regnskapsregisteret REST API
+### Regnskapsregisteret REST API (Default Source: `accounts`)
 - **Provider**: Brønnøysund Register Centre (*Regnskapsregisteret*).
 - **Endpoint Pattern**: `https://data.brreg.no/regnskapsregisteret/regnskap/{org_number}`
 - **Authentication**: **None** (Public Open Data REST API under NLOD).
-- **Duplicate & Revision Handling**: Identical duplicate filings for a period/scope are deduplicated deterministically; conflicting duplicate filings for the same period and scope are withheld from clean publication to prevent published ambiguity.
+- **Accuracy & Precision**: Strictly 11 whitelisted source key figures; 0 derived ratios, 0 profit margins, 0 OCR/parsing errors. Exact source numeric amounts and currencies (`valuta`) preserved. Statements missing currency metadata or containing conflicting duplicate filings are withheld from monetary fact publication.
+- **Budget Control**: Logged under `accounts_fetch` request type.
 
-### Fullmakttjenesten Signature Rights & Procuration REST API
+### Underenheter Operating Units REST API (Default Source: `subentities`)
+- **Provider**: Brønnøysund Register Centre (*Enhetsregisteret / Underenheter*).
+- **Endpoint Pattern**: `https://data.brreg.no/enhetsregisteret/api/underenheter?overordnetEnhet={org_number}`
+- **Authentication**: **None** (Public Open Data REST API under NLOD).
+- **Parent/Child Scope Separation**: Subentity facts (addresses, employee counts, activities) strictly preserve `relationship = operating_unit_of` and are never merged into parent legal entity attributes.
+- **Employee Suppression Semantics**: Respects `harRegistrertAntallAnsatte=True` without inventing an exact zero when `antallAnsatte` is suppressed by Brønnøysund.
+- **Budget Control**: Logged under `subentities_fetch` request type.
+
+### Fullmakttjenesten Signature Rights & Procuration REST API (Optional Source: `fullmakt`)
 - **Provider**: Brønnøysund Register Centre (*Fullmakttjenesten*).
 - **Endpoint Patterns**:
   - `https://data.brreg.no/fullmakt/enheter/{org_number}/signatur`
   - `https://data.brreg.no/fullmakt/enheter/{org_number}/prokura`
-- **Authentication**: **None** (Public Open Data REST API under NLOD). Restrictive Maskinporten endpoints (`/autorisert-api/` or `data.vcert.brreg.no`) are deliberately NOT used.
-- **Transport**: HTTPS GET returning structured JSON authority objects.
-- **Privacy Enforcement**: Strict privacy barrier recursively strips birth dates (`fodselsdato`, `fødselsdato`), national identity numbers (`fnr`, `fodselsnummer`), and D-numbers (`d-number`, `dnummer`) before any fact or evidence is stored in SQLite or raw evidence.
-- **Organization Form Pre-checking**: Uses Enhetsregisteret organization form classification to skip unnecessary HTTP requests for forms that do not maintain machine authority routines (e.g. `ORGL`, `ADM`, `STAT`, `FYLK`, `KOMM`, `PERS`).
-- **Holder-Stable Keys**: Normalized combination and text rule facts keyed deterministically to avoid false changes.
-
-### Underenheter Operating Units REST API
-- **Provider**: Brønnøysund Register Centre (*Enhetsregisteret / Underenheter*).
-- **Endpoint Pattern**: `https://data.brreg.no/enhetsregisteret/api/underenheter?overordnetEnhet={org_number}`
 - **Authentication**: **None** (Public Open Data REST API under NLOD).
-- **Transport**: HTTPS GET returning paginated JSON lists of operating units (`_embedded.underenheter`).
-- **Parent/Child Scope Separation**: Subentity facts (addresses, employee counts, activities) strictly preserve `relationship = operating_unit_of` and are never merged into parent legal entity attributes.
-- **Employee Suppression Semantics**: Respects `harRegistrertAntallAnsatte=True` without inventing an exact zero when `antallAnsatte` is suppressed by Brønnøysund.
-- **Bounded Pagination Safety**: Implements deterministic sorting (`sort=organisasjonsnummer,ASC`) and safety limits (max pages, max subentities) to cap unbounded loops, issuing `subentity_result_truncated` warnings when capped.
+- **Privacy Enforcement**: Strict privacy barrier recursively strips birth dates (`fodselsdato`), national identity numbers (`fnr`), and D-numbers (`d-number`).
+- **Budget Control**: Logged under `signatur_fetch` and `prokura_fetch` request types.
 
-### Corporate Group Structure REST API
+### Corporate Group Structure REST API (Optional Source: `group`)
 - **Provider**: Brønnøysund Register Centre (*Enhetsregisteret / Konsernstruktur*).
 - **Endpoint Pattern**: `https://data.brreg.no/enhetsregisteret/api/konsernstruktur/{org_number}`
 - **Authentication**: **None** (Public Open Data REST API under NLOD).
-- **Transport**: HTTPS GET returning complete corporate group hierarchy JSON trees rooted at ultimate parent companies.
 - **Relationship Scoping**: Group facts are stored as relationship-scoped entries (`group_relation_<parent>_<child>_<code...>`), ensuring corporate group relationships never overwrite direct legal entity attributes.
-- **Status Classification**: Distinguishes HTTP 200 (corporate group present) from HTTP 404 (company is not part of a registered corporate group).
-- **Safety Traversal Caps**: Implements set-based cycle detection and bounded safety limits (`max_nodes=500`, `max_depth=20`) to prevent infinite loops during hierarchy tree parsing.
+- **Cycle Protection & Caps**: Implements set-based cycle detection and bounded safety limits (`max_nodes=500`, `max_depth=20`).
+- **Budget Control**: Logged under `group_structure_fetch` request type.
+
+### Finanstilsynet Virksomhetsregisteret API v2 (Conditional Source: `finanstilsynet`)
+- **Provider**: Financial Supervisory Authority of Norway (*Finanstilsynet*).
+- **Endpoint Pattern**: `https://api.finanstilsynet.no/registry/v2/legal-entities/filter?query={org_number}`
+- **Authentication**: **None** (Public Open Data REST API).
+- **Scope**: Exact 9-digit company matching (`legalEntityType != 'Person'`). Excludes residential addresses, birth dates, and personal identification numbers.
+- **Budget Control**: Logged under `finanstilsynet_fetch` request type.
 
 ---
 
 ## 3. Financial Cost Analysis
 
-| Component | Cost |
-| :--- | :--- |
-| **Brønnøysund Registry REST API** | `$0.00` (Free public API under NLOD) |
-| **Brønnøysund Bulk Open Data** | `$0.00` (Free public dataset under NLOD) |
-| **Brønnøysund Roles Open API** | `$0.00` (Free public API under NLOD) |
-| **Brønnøysund Regnskapsregisteret REST API** | `$0.00` (Free public API under NLOD) |
-| **Brønnøysund Fullmakttjenesten Open API** | `$0.00` (Free public API under NLOD) |
-| **Brønnøysund Underenheter Open API** | `$0.00` (Free public API under NLOD) |
-| **Brønnøysund Corporate Group Structure Open API** | `$0.00` (Free public API under NLOD) |
-| **Finanstilsynet Registry API v2** | `$0.00` (Free public Open API) |
-| **Database Storage (SQLite)** | `$0.00` (Local embedded database) |
-| **Model / Inference Fees** | `$0.00` (Zero commercial LLM API fees or subscriptions) |
-| **Total External Financial Cost** | **`$0.00`** |
+| Component | Cost | Default Enabled |
+| :--- | :--- | :--- |
+| **Brønnøysund Registry REST API** | `$0.00` | Yes |
+| **Brønnøysund Bulk Open Data** | `$0.00` | Yes (Local) |
+| **Brønnøysund Roles Open API** | `$0.00` | Yes |
+| **Brønnøysund Regnskapsregisteret REST API** | `$0.00` | Yes |
+| **Brønnøysund Underenheter Open API** | `$0.00` | Yes |
+| **Brønnøysund Fullmakttjenesten Open API** | `$0.00` | Optional |
+| **Brønnøysund Corporate Group Structure Open API** | `$0.00` | Optional |
+| **Finanstilsynet Registry API v2** | `$0.00` | Conditional |
+| **Database Storage (SQLite)** | `$0.00` | Yes |
+| **Model / Inference Fees** | `$0.00` | N/A |
+| **Total External Financial Cost** | **`$0.00`** | **`$0.00`** |
 
 ---
 
 ## 4. Dependencies & Open-Source Libraries
 
 Signalpost is built using standard Python and permissive open-source libraries:
-
-- **`Python 3.9+`**: Core runtime.
+- **`Python 3.9+`**: Minimum supported Python runtime version.
 - **`pydantic (>=2.0.0)`**: Strict data validation, schema enforcement, and type coercion.
 - **`requests (>=2.28.0)`**: HTTP transport with custom session timeout and budget tracking.
 - **`sqlite3`** (Standard Library): Relational database with full transaction safety, partial unique indexes, and foreign key enforcement.
