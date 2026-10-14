@@ -977,7 +977,7 @@ def load_input_org_numbers(input_source: Union[str, Path]) -> List[str]:
             raise FileNotFoundError(f"Input file not found: '{input_source}'")
         content = p.read_text(encoding="utf-8")
 
-    content_clean = content.strip()
+    content_clean = content.strip().lstrip("\ufeff")
     if not content_clean:
         return []
 
