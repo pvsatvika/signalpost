@@ -167,6 +167,12 @@ class TestCompanyRunner(unittest.TestCase):
         p4.write_text("", encoding="utf-8")
         self.assertEqual(load_input_org_numbers(str(p4)), [])
 
+
+        # UTF-8 BOM-prefixed JSON (common from Windows PowerShell Out-File)
+        p5 = Path(self.temp_dir.name) / "input_bom.json"
+        p5.write_text('["923609016", "974760673"]', encoding="utf-8-sig")
+        self.assertEqual(load_input_org_numbers(str(p5)), ["923609016", "974760673"])
+
     def test_100_company_offline_benchmark(self):
         """
         100-Company Offline Benchmark Test:
