@@ -5,7 +5,7 @@ Command-line interface for Signalpost.
 import argparse
 import json
 import sys
-from typing import Optional, List
+from typing import Any, Dict, List, Optional
 
 from signal_post.client import BrregClient
 from signal_post.exceptions import SignalpostError
