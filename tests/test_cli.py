@@ -9,6 +9,7 @@ from unittest.mock import patch, MagicMock
 import io
 import json
 import sys
+import subprocess
 
 from signal_post.cli import main
 from signal_post.exceptions import InvalidOrgNumberError, CompanyNotFoundError
@@ -16,6 +17,19 @@ from signal_post.models import NormalizedCompanyProfile
 
 
 class TestCLI(unittest.TestCase):
+
+    def test_module_help_starts_cleanly(self):
+        """Regression: the evaluator-facing module must import and start without NameError."""
+        repo_root = Path(__file__).resolve().parents[1]
+        proc = subprocess.run(
+            [sys.executable, "-m", "signal_post", "--help"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(proc.returncode, 0, msg=proc.stderr)
+        self.assertIn("usage:", proc.stdout.lower())
+
 
     @patch("signal_post.cli.BrregClient")
     def test_cli_human_output_success(self, mock_client_cls):
